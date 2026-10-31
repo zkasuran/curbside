@@ -18,13 +18,18 @@ export interface NavigationState {
   path?: string;
   publicPath?: string;
   threadId?: string;
+  photoId?: string;
+  proposalId?: string;
+  filter?: string;
+  center?: string;
 }
 
 export function useNavigationState() {
   useAgentRouteState<NavigationState>({
     browserTabId: TAB_ID,
     requestSource: TAB_ID,
-    getNavigationState: ({ pathname }) => navigationStateForPath(pathname),
+    getNavigationState: ({ pathname, searchParams }) =>
+      navigationStateForPath(pathname, searchParams),
     getCommandPath: commandPathForNavigation,
   });
 }
@@ -62,17 +67,36 @@ function matchesPathPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-export function navigationStateForPath(pathname: string): NavigationState {
+export function navigationStateForPath(
+  pathname: string,
+  searchParams?: URLSearchParams,
+): NavigationState {
   const threadId = threadIdFromPath(pathname);
+  const pick = (key: string) => {
+    const v = searchParams?.get(key);
+    return v && v.length <= 80 ? v : undefined;
+  };
+  const survey = pathname.startsWith(SURVEY_PATH);
+  const photoId = survey ? pick("photo") : undefined;
+  const proposalId = survey ? pick("proposal") : undefined;
+  const filter = survey ? pick("filter") : undefined;
+  const center = survey ? pick("at") : undefined;
   return {
     view: viewForPath(pathname),
     path: pathname,
     publicPath: appPathFromLocalRoute(pathname),
     ...(threadId ? { threadId } : {}),
+    ...(photoId ? { photoId } : {}),
+    ...(proposalId ? { proposalId } : {}),
+    ...(filter ? { filter } : {}),
+    ...(center ? { center } : {}),
   };
 }
 
+export const SURVEY_PATH = "/survey";
+
 function viewForPath(pathname: string): string {
+  if (pathname.startsWith(SURVEY_PATH)) return "survey";
   if (isChatPathname(pathname)) return "chat";
   if (pathname === HOME_PATH) return "home";
   if (pathname.startsWith("/database")) return "database";
@@ -91,6 +115,8 @@ function pathForView(view?: string): string {
     case "chat":
     case "ask":
       return NEW_CHAT_PATH;
+    case "survey":
+      return SURVEY_PATH;
     case "home":
       return HOME_PATH;
     case "database":
@@ -112,6 +138,14 @@ function pathForView(view?: string): string {
 
 export function pathForCommand(command: any): string {
   const path = pathForView(command?.view);
+  if (command?.view === "survey") {
+    const q = new URLSearchParams();
+    for (const [param, key] of [["photo", "photoId"], ["proposal", "proposalId"], ["filter", "filter"], ["at", "center"]] as const) {
+      const v = command?.[key];
+      if (typeof v === "string" && v.length > 0 && v.length <= 80) q.set(param, v);
+    }
+    return q.size ? `${path}?${q}` : path;
+  }
   if (command?.view !== "chat" && command?.view !== "ask") return path;
   const threadId =
     typeof command?.threadId === "string" ? command.threadId.trim() : "";
