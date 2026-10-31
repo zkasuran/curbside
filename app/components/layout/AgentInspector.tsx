@@ -39,6 +39,7 @@ export function AgentInspector({
       onFullscreenRequest={openAskAgentFullscreen}
       emptyStateText={t("chat.inspectEmptyState")}
       agentPageHref="/settings/agent"
+      showModelSelector={false}
       suggestions={[
         t("chat.inspectSuggestionCapabilities"),
         t("chat.inspectSuggestionHello"),

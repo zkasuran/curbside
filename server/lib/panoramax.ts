@@ -34,6 +34,7 @@ export interface StreetPhoto {
   producer: string;
   imageUrl: string;
   thumbUrl: string;
+  hdUrl: string | null;
   pageUrl: string;
 }
 
@@ -55,6 +56,7 @@ export function parsePanoramax(json: unknown): StreetPhoto[] {
     const p = f.properties ?? {};
     const sd = f.assets?.sd?.href;
     const thumb = f.assets?.thumb?.href;
+    const hd = f.assets?.hd?.href;
     const license = typeof p.license === "string" ? p.license : "";
     const io = (p["pers:interior_orientation"] ?? {}) as { field_of_view?: unknown };
     const az = p["view:azimuth"];
@@ -72,6 +74,7 @@ export function parsePanoramax(json: unknown): StreetPhoto[] {
       producer: typeof p["geovisio:producer"] === "string" ? (p["geovisio:producer"] as string).slice(0, 80) : "unknown",
       imageUrl: sd,
       thumbUrl: typeof thumb === "string" && isPanoramaxImageUrl(thumb) ? thumb : sd,
+      hdUrl: typeof hd === "string" && isPanoramaxImageUrl(hd) ? hd : null,
       pageUrl: `https://api.panoramax.xyz/#focus=pic&pic=${id}`,
     });
   }
@@ -103,9 +106,13 @@ export async function photoById(sourceId: string): Promise<StreetPhoto | null> {
 const JPEG = [0xff, 0xd8, 0xff];
 
 /** Download one picture for the agent to look at. Refuses anything that is not a JPEG. */
-export async function downloadImage(url: string): Promise<{ base64: string; bytes: number }> {
+export async function downloadImage(url: string, maxBytes: number = LIMITS.imageMaxBytes): Promise<Uint8Array> {
   if (!isPanoramaxImageUrl(url)) throw new Error("Not a Panoramax picture URL.");
-  const { bytes } = await fetchBytes(url, { maxBytes: LIMITS.imageMaxBytes });
+  const { bytes } = await fetchBytes(url, {
+    maxBytes,
+    timeoutMs: LIMITS.fetchTimeoutMs * 2,
+    allowRedirectTo: (u) => isPanoramaxImageUrl(u.toString()),
+  });
   if (!JPEG.every((b, i) => bytes[i] === b)) throw new Error("The picture is not a JPEG.");
-  return { base64: Buffer.from(bytes).toString("base64"), bytes: bytes.byteLength };
+  return bytes;
 }

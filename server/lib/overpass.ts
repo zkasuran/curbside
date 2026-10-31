@@ -34,7 +34,8 @@ interface OverpassElement {
 }
 
 function overpassUrls(): string[] {
-  const urls = process.env.OVERPASS_URL ? process.env.OVERPASS_URL.split(",").map((u) => u.trim()) : DEFAULT_OVERPASS;
+  const configured = process.env.OVERPASS_URL; // guard:allow-env-credential — public endpoint list, not a credential
+  const urls = configured ? configured.split(",").map((u) => u.trim()) : DEFAULT_OVERPASS;
   for (const u of urls) if (!u.startsWith("https://")) throw new Error("OVERPASS_URL must be https.");
   return urls;
 }
@@ -85,7 +86,7 @@ async function run(query: string): Promise<LiveFeature[]> {
 const POI_FILTER = `[~"^(shop|amenity|craft|office|tourism|leisure|healthcare|club)$"~"."]`;
 
 export async function featuresAround(lat: number, lon: number, radiusM: number): Promise<LiveFeature[]> {
-  const r = Math.max(5, Math.min(radiusM, LIMITS.importRadiusMaxM));
+  const r = Math.max(5, Math.min(radiusM, LIMITS.importRadiusMaxM + 200));
   const q = `[out:json][timeout:25];nwr(around:${r},${lat.toFixed(7)},${lon.toFixed(7)})${POI_FILTER};out tags center meta;`;
   return run(q);
 }

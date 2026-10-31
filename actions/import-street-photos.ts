@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: LicenseRef-zkasuran-SAND-1.0
 import { defineAction, fail } from "@agent-native/core/action";
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb, schema } from "../server/db/index.js";
 import { caller, ownedBy, photoDto, rethrow } from "../server/lib/common.js";
 import { bboxAround, distanceM } from "../server/lib/geo.js";
 import { LIMITS } from "../server/lib/limits.js";
+import { storeArea } from "../server/lib/features.js";
 import { searchPhotos } from "../server/lib/panoramax.js";
 
 export default defineAction({
@@ -22,7 +23,7 @@ export default defineAction({
   run: async (args, ctx) => {
     const who = caller(ctx);
     const db = getDb();
-    const [{ n }] = await db.select({ n: count() }).from(schema.photos).where(ownedBy(schema.photos, who));
+    const [{ n } = { n: 0 }] = await db.select({ n: count() }).from(schema.photos).where(ownedBy(schema.photos, who));
     if (n >= LIMITS.photosPerUser)
       fail(`Your survey already holds ${n} photos, the most allowed.`, { errorCode: "photo_limit", statusCode: 409 });
 
@@ -62,10 +63,14 @@ export default defineAction({
             producer: p.producer,
             imageUrl: p.imageUrl,
             thumbUrl: p.thumbUrl,
+            hdUrl: p.hdUrl,
             pageUrl: p.pageUrl,
           })),
         )
-        .onConflictDoNothing();
+        .onConflictDoUpdate({
+          target: [schema.photos.ownerEmail, schema.photos.source, schema.photos.sourceId],
+          set: { hdUrl: sql`excluded.hd_url`, imageUrl: sql`excluded.image_url`, thumbUrl: sql`excluded.thumb_url` },
+        });
     }
     const rows = picked.length
       ? await db
@@ -73,8 +78,16 @@ export default defineAction({
           .from(schema.photos)
           .where(and(ownedBy(schema.photos, who), eq(schema.photos.source, "panoramax"), inArray(schema.photos.sourceId, picked.map((p) => p.sourceId))))
       : [];
+    // Fetch the live map around the whole area once, so each photo inspection is instant.
+    let mapReady = false;
+    if (rows.length) {
+      mapReady = await storeArea(who, center, args.radiusM + LIMITS.featureRadiusM + LIMITS.duplicateRadiusM)
+        .then(() => true)
+        .catch(() => false);
+    }
     return {
       imported: rows.length,
+      mapReady,
       found: found.length,
       photos: rows.map(photoDto),
       message: rows.length

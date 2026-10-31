@@ -23,10 +23,11 @@ export function validateEvidenceBox(box: number[] | null | undefined): [number, 
   if (!box) return null;
   if (box.length !== 4 || !box.every((n) => Number.isFinite(n)))
     throw new TagError("evidenceBox must be four numbers [x, y, w, h].", "invalid_box");
-  const [x, y, w, h] = box;
+  const [x = -1, y = -1, w = 0, h = 0] = box;
   if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > 1.0001 || y + h > 1.0001)
     throw new TagError("evidenceBox must lie inside the photo, as fractions of its width and height.", "invalid_box");
-  return [x, y, w, h].map((n) => Math.round(n * 1000) / 1000) as [number, number, number, number];
+  const r = (n: number) => Math.round(n * 1000) / 1000;
+  return [r(x), r(y), r(w), r(h)];
 }
 
 export function assertPhotoFresh(capturedAt: string, now = Date.now()): void {

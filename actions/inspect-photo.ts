@@ -7,16 +7,23 @@ import { getDb, schema } from "../server/db/index.js";
 import { caller, nowIso, ownedBy, photoDto, rethrow } from "../server/lib/common.js";
 import { cachedFeaturesAround, featuresInView } from "../server/lib/features.js";
 import { LIMITS } from "../server/lib/limits.js";
+import { autoCropBoxes, clampBox, cropJpeg, type Box } from "../server/lib/imaging.js";
+import { blindFeature } from "../server/lib/match.js";
 import { downloadImage } from "../server/lib/panoramax.js";
 
 export default defineAction({
   description:
-    "Look at one survey photo: returns the picture itself plus the live OpenStreetMap features inside the camera's view cone, each with its tags, distance and expectedX (where across the frame it should appear, 0 left to 1 right). Compare what the signs say with the tags, then call propose-edit for each difference you can read. Set includeImage false when you only need the feature list.",
+    "Look at one survey photo: returns an overview of the picture, up to three full-resolution crops of the shopfronts, and where mapped features sit in the frame (kind and expectedX, 0 left to 1 right) WITHOUT their names, so you read the street, not the map. Transcribe every sign, then call record-signs to see how your readings match the map. For a sign still too small, call again with zoom [x, y, w, h] (fractions of the full frame).",
   schema: z.object({
     photoId: z.string().uuid().describe("Photo id from list-photos or import-street-photos"),
     includeImage: z.coerce.boolean().default(true).describe("Attach the picture for the agent to see"),
+    zoom: z
+      .array(z.number().min(0).max(1))
+      .length(4)
+      .optional()
+      .describe("Close-up region [x, y, w, h] as fractions of the full frame; returns only that crop"),
   }),
-  run: async ({ photoId, includeImage }, ctx) => {
+  run: async ({ photoId, includeImage, zoom }, ctx) => {
     const who = caller(ctx);
     const db = getDb();
     const [photo] = await db
@@ -27,14 +34,37 @@ export default defineAction({
     if (!photo) fail("Photo not found in your survey.", { errorCode: "not_found", statusCode: 404 });
 
     let inView;
-    let image: { base64: string; bytes: number } | null = null;
+    const images: { data: string; mediaType: "image/jpeg"; label: string }[] = [];
+    const credit = `${photo.producer}, Panoramax, ${photo.license}`;
+    const useHd = Boolean(photo.hdUrl) && photo.fov !== null && photo.fov < 300;
     try {
-      const [features, img] = await Promise.all([
-        cachedFeaturesAround(photo, LIMITS.featureRadiusM),
-        includeImage ? downloadImage(photo.imageUrl) : Promise.resolve(null),
+      const [features, source] = await Promise.all([
+        cachedFeaturesAround(who, photo, LIMITS.featureRadiusM),
+        includeImage
+          ? // 360 panoramas are huge at full resolution; their standard size is enough to read from.
+            downloadImage(useHd ? (photo.hdUrl as string) : photo.imageUrl, useHd ? LIMITS.hdImageMaxBytes : LIMITS.imageMaxBytes).catch(() =>
+              downloadImage(photo.imageUrl),
+            )
+          : Promise.resolve(null),
       ]);
       inView = featuresInView(photo, features);
-      image = img;
+      if (source) {
+        const fmt = (b: Box) => b.map((n) => n.toFixed(2)).join(", ");
+        if (zoom) {
+          const box = clampBox(zoom as Box);
+          images.push({ data: await cropJpeg(source, box), mediaType: "image/jpeg", label: `Close-up of [${fmt(box)}] of photo ${photo.id} (${credit})` });
+        } else {
+          images.push({
+            data: await cropJpeg(source, null),
+            mediaType: "image/jpeg",
+            label: `Photo ${photo.id}, whole frame, facing ${photo.azimuth ?? "?"} degrees, taken ${photo.capturedAt.slice(0, 10)} (${credit})`,
+          });
+          const named = inView.filter((f) => f.expectedX !== null && (f.tags.name || f.tags.shop || f.tags.amenity));
+          for (const box of autoCropBoxes(named.map((f) => f.expectedX as number))) {
+            images.push({ data: await cropJpeg(source, box), mediaType: "image/jpeg", label: `Full-resolution crop [${fmt(box)}] of the same photo (x, y, w, h of the frame)` });
+          }
+        }
+      }
     } catch (error) {
       rethrow(error);
     }
@@ -51,25 +81,14 @@ export default defineAction({
     const ageDays = Math.round((Date.now() - Date.parse(photo.capturedAt)) / 86_400_000);
     return {
       photo: { ...photoDto(photo), ageDays },
-      featuresInView: inView.map((f) => ({
-        ...f,
-        existingProposals: open
-          .filter((p) => p.osmType === f.type && p.osmId === f.id)
-          .map((p) => ({ id: p.id, status: p.status })),
+      mappedFeaturesInView: inView.map((f) => ({
+        ...blindFeature(f),
+        openProposals: open.filter((p) => p.osmType === f.type && p.osmId === f.id).length,
       })),
       guidance:
-        "Propose only what the picture shows legibly. Quote the sign text in evidence. A sign that names a feature already on the map is a rename or a confirmation (check_date), never a new point.",
-      ...(image
-        ? {
-            _agentImages: [
-              {
-                data: image.base64,
-                mediaType: "image/jpeg",
-                label: `Street photo ${photo.id}, facing ${photo.azimuth ?? "?"} degrees, taken ${photo.capturedAt.slice(0, 10)} (${photo.producer}, Panoramax, ${photo.license})`,
-              },
-            ],
-          }
-        : {}),
+        "Read every shop and business sign in the pictures exactly as written (spelling, word order, accents). Mark anything you had to guess as partial. Then call record-signs with your readings and their boxes.",
+      images: images.map((i) => i.label),
+      ...(images.length ? { _agentImages: images } : {}),
     };
   },
 });

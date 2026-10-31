@@ -27,7 +27,8 @@ const AI_LINE = "Drafted by an AI agent from street-level photos; each edit appr
 
 /** Test-only fault injection, so the interrupted-upload path can be exercised for real. */
 function faultPoint(name: string): void {
-  if (process.env.NODE_ENV !== "production" && process.env.CURBSIDE_FAULT === name) {
+  const fault = process.env.CURBSIDE_FAULT; // guard:allow-env-credential — test-only fault switch, off in production
+  if (process.env.NODE_ENV !== "production" && fault === name) {
     throw new Error(`Injected fault at ${name}`);
   }
 }
@@ -150,7 +151,7 @@ export async function uploadApproved(who: Caller, ids: string[] | undefined, com
   const p = schema.proposals;
 
   const since = new Date(Date.now() - 86_400_000).toISOString();
-  const [{ n }] = await db.select({ n: count() }).from(schema.changesets).where(and(ownedBy(schema.changesets, who), gte(schema.changesets.createdAt, since)));
+  const [{ n } = { n: 0 }] = await db.select({ n: count() }).from(schema.changesets).where(and(ownedBy(schema.changesets, who), gte(schema.changesets.createdAt, since)));
   if (n >= LIMITS.uploadsPerUserPerDay)
     fail(`You have uploaded ${n} times in the last day, the most allowed in the demo.`, { errorCode: "rate_limited", statusCode: 429 });
 

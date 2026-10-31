@@ -2,6 +2,8 @@
 // The OSM API 0.6 client. It only ever talks to the development sandbox: the base URL is
 // checked against OSM_WRITE_HOSTS on every call, so a stray env var cannot point it at live OSM.
 
+import { resolveSecretDetailed } from "@agent-native/core/server";
+
 import { HttpError, fetchJson, fetchText } from "./http.js";
 import { LIMITS, OSM_DEV_API_BASE, OSM_WRITE_HOSTS } from "./limits.js";
 import {
@@ -20,7 +22,8 @@ import type { Tags } from "./tags.js";
 export class OsmConfigError extends Error {}
 
 export function osmBase(): string {
-  const base = (process.env.OSM_API_BASE || OSM_DEV_API_BASE).replace(/\/+$/u, "");
+  const base = (process.env.OSM_API_BASE || OSM_DEV_API_BASE) // guard:allow-env-credential — a URL, checked against the sandbox host allowlist below
+   .replace(/\/+$/u, "");
   const host = new URL(base).host;
   if (!OSM_WRITE_HOSTS.has(host)) {
     throw new OsmConfigError(`OSM_API_BASE host ${host} is not an allowed sandbox host. This build never writes to live OSM.`);
@@ -28,14 +31,21 @@ export function osmBase(): string {
   return base;
 }
 
-function token(): string {
-  const t = process.env.OSM_DEV_DEMO_TOKEN;
-  if (!t) throw new OsmConfigError("No sandbox token is configured (OSM_DEV_DEMO_TOKEN).");
-  return t;
+export const SANDBOX_TOKEN_KEY = "OSM_SANDBOX_TOKEN";
+
+/**
+ * The OAuth 2 token uploads run under: the user's own sandbox token when they saved one in
+ * Settings, otherwise the deployment's shared demo account (same key in the deploy env).
+ */
+export async function sandboxToken(): Promise<{ token: string; own: boolean }> {
+  const found = await resolveSecretDetailed(SANDBOX_TOKEN_KEY);
+  if (found.lookupFailed) throw new HttpError("The credential store did not answer. Try again.", 503, "");
+  if (!found.value) throw new OsmConfigError("No OSM sandbox token is configured.");
+  return { token: found.value, own: found.source !== "env" };
 }
 
-function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return { Authorization: `Bearer ${token()}`, ...extra };
+async function authHeaders(extra: Record<string, string> = {}): Promise<Record<string, string>> {
+  return { Authorization: `Bearer ${(await sandboxToken()).token}`, ...extra };
 }
 
 export function elementUrl(type: OsmType, id: string): string {
@@ -49,7 +59,7 @@ export function changesetUrl(id: string): string {
 export async function getElement(type: OsmType, id: string): Promise<OsmElement | null> {
   if (!/^\d+$/u.test(id)) throw new Error("Element ids must be numeric.");
   try {
-    const json = await fetchJson<unknown>(`${osmBase()}/api/0.6/${type}/${id}.json`, { headers: authHeaders() });
+    const json = await fetchJson<unknown>(`${osmBase()}/api/0.6/${type}/${id}.json`, { headers: await authHeaders() });
     return parseElementJson(json);
   } catch (error) {
     if (error instanceof HttpError && (error.status === 404 || error.status === 410)) return null;
@@ -61,7 +71,7 @@ export async function openChangeset(tags: Tags): Promise<string> {
   const id = (
     await fetchText(`${osmBase()}/api/0.6/changeset/create`, {
       method: "PUT",
-      headers: authHeaders({ "Content-Type": "text/xml" }),
+      headers: await authHeaders({ "Content-Type": "text/xml" }),
       body: changesetXml(tags),
     })
   ).trim();
@@ -71,7 +81,7 @@ export async function openChangeset(tags: Tags): Promise<string> {
 
 export async function closeChangeset(id: string): Promise<void> {
   try {
-    await fetchText(`${osmBase()}/api/0.6/changeset/${id}/close`, { method: "PUT", headers: authHeaders() });
+    await fetchText(`${osmBase()}/api/0.6/changeset/${id}/close`, { method: "PUT", headers: await authHeaders() });
   } catch (error) {
     // 409 means it is already closed, which is the state we wanted.
     if (!(error instanceof HttpError && error.status === 409)) throw error;
@@ -81,7 +91,7 @@ export async function closeChangeset(id: string): Promise<void> {
 export async function uploadDiff(changesetId: string, creates: NodeCreate[], modifies: ElementModify[]): Promise<DiffEntry[]> {
   const xml = await fetchText(`${osmBase()}/api/0.6/changeset/${changesetId}/upload`, {
     method: "POST",
-    headers: authHeaders({ "Content-Type": "text/xml" }),
+    headers: await authHeaders({ "Content-Type": "text/xml" }),
     body: osmChangeXml(changesetId, creates, modifies),
     timeoutMs: LIMITS.fetchTimeoutMs * 2,
   });
@@ -98,14 +108,14 @@ export interface ChangesetCreate {
 /** What a changeset created, read back from the server. Used to reconcile an interrupted upload. */
 export async function changesetCreates(changesetId: string): Promise<ChangesetCreate[]> {
   if (!/^\d+$/u.test(changesetId)) throw new Error("Changeset id must be numeric.");
-  const xml = await fetchText(`${osmBase()}/api/0.6/changeset/${changesetId}/download`, { headers: authHeaders() });
+  const xml = await fetchText(`${osmBase()}/api/0.6/changeset/${changesetId}/download`, { headers: await authHeaders() });
   const out: ChangesetCreate[] = [];
   for (const block of xml.matchAll(/<create>([\s\S]*?)<\/create>/gu)) {
-    for (const m of block[1].matchAll(/<(node|way|relation)\s([^>]*?)(\/>|>([\s\S]*?)<\/\1>)/gu)) {
+    for (const m of (block[1] ?? "").matchAll(/<(node|way|relation)\s([^>]*?)(\/>|>([\s\S]*?)<\/\1>)/gu)) {
       const a: Record<string, string> = {};
-      for (const x of m[2].matchAll(/([a-z_]+)="([^"]*)"/gu)) a[x[1]] = x[2];
+      for (const x of (m[2] ?? "").matchAll(/([a-z_]+)="([^"]*)"/gu)) if (x[1] && x[2] !== undefined) a[x[1]] = x[2];
       const tags: Tags = {};
-      for (const t of (m[4] ?? "").matchAll(/<tag k="([^"]*)" v="([^"]*)"\s*\/>/gu)) tags[unescape(t[1])] = unescape(t[2]);
+      for (const t of (m[4] ?? "").matchAll(/<tag k="([^"]*)" v="([^"]*)"\s*\/>/gu)) tags[unescape(t[1] ?? "")] = unescape(t[2] ?? "");
       if (a.id && /^\d+$/u.test(a.id)) out.push({ type: m[1] as OsmType, id: a.id, version: Number(a.version), tags });
     }
   }
@@ -130,7 +140,7 @@ export interface SandboxUser {
 export async function whoAmI(): Promise<SandboxUser> {
   const json = await fetchJson<{ user?: { id: number; display_name: string } }>(
     `${osmBase()}/api/0.6/user/details.json`,
-    { headers: authHeaders() },
+    { headers: await authHeaders() },
   );
   if (!json.user) throw new HttpError("The sandbox did not return a user.", 502, "");
   return { id: json.user.id, displayName: json.user.display_name };

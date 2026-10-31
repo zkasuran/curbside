@@ -85,6 +85,48 @@ CREATE INDEX IF NOT EXISTS proposals_owner_status_idx ON proposals (owner_email,
 CREATE INDEX IF NOT EXISTS proposals_owner_target_idx ON proposals (owner_email, osm_type, osm_id);
 CREATE INDEX IF NOT EXISTS changesets_owner_created_idx ON changesets (owner_email, created_at)`,
     },
+    {
+      version: 2,
+      name: "curbside-area-features",
+      sql: `CREATE TABLE IF NOT EXISTS area_features (
+  id TEXT PRIMARY KEY,
+  owner_email TEXT NOT NULL,
+  org_id TEXT,
+  lat REAL NOT NULL,
+  lon REAL NOT NULL,
+  radius_m REAL NOT NULL,
+  features TEXT NOT NULL,
+  fetched_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS area_features_owner_idx ON area_features (owner_email, fetched_at)`,
+    },
+    {
+      version: 3,
+      name: "curbside-photo-hd-url",
+      sql: `ALTER TABLE photos ADD COLUMN IF NOT EXISTS hd_url TEXT`,
+    },
+    {
+      version: 4,
+      name: "curbside-sign-readings",
+      sql: `CREATE TABLE IF NOT EXISTS sign_readings (
+  id TEXT PRIMARY KEY,
+  owner_email TEXT NOT NULL,
+  org_id TEXT,
+  photo_id TEXT NOT NULL REFERENCES photos(id),
+  text TEXT NOT NULL,
+  kind TEXT,
+  box TEXT,
+  legibility TEXT NOT NULL CHECK (legibility IN ('clear', 'partial')),
+  details TEXT NOT NULL,
+  verdict TEXT NOT NULL,
+  match_target TEXT,
+  match_name TEXT,
+  similarity REAL,
+  created_at TEXT NOT NULL DEFAULT (now())
+);
+CREATE INDEX IF NOT EXISTS sign_readings_owner_photo_idx ON sign_readings (owner_email, photo_id);
+ALTER TABLE proposals ADD COLUMN IF NOT EXISTS reading_id TEXT`,
+    },
   ],
   { table: "curbside_migrations" },
 );

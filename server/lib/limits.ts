@@ -10,6 +10,8 @@ export const LIMITS = {
   /** Tags we keep from a fetched element when we show it to the agent. */
   tagsPerFeature: 60,
   evidenceMaxChars: 400,
+  readingsPerCall: 30,
+  readingTextMaxChars: 120,
   rationaleMaxChars: 600,
   noteMaxChars: 400,
   changesetCommentMaxChars: 255,
@@ -31,10 +33,18 @@ export const LIMITS = {
   photoMaxAgeDays: 3 * 365,
   /** Bytes we will download for one street photo. */
   imageMaxBytes: 1_400_000,
+  /** Bytes for the full-resolution picture used for zoomed crops. */
+  hdImageMaxBytes: 9_000_000,
+  /** Longest edge of any picture handed to the agent, pixels. */
+  agentImageMaxEdge: 1600,
+  /** Zoomed crops returned with one inspection (plus the overview). */
+  autoCrops: 3,
   /** Bytes we will read from any JSON or XML API response. */
   responseMaxBytes: 4_000_000,
   fetchTimeoutMs: 20_000,
-  overpassTimeoutMs: 30_000,
+  overpassTimeoutMs: 25_000,
+  /** How long a fetched area of live features is reused before Overpass is asked again. */
+  areaFeaturesMaxAgeMs: 24 * 3_600_000,
   /** An upload claim older than this is treated as interrupted and reconciled. */
   staleUploadMs: 5 * 60_000,
   uploadsPerUserPerDay: 30,

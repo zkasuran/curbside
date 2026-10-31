@@ -17,7 +17,7 @@ export function escapeXml(value: string): string {
 function tagXml(tags: Tags): string {
   return Object.keys(tags)
     .sort()
-    .map((k) => `<tag k="${escapeXml(k)}" v="${escapeXml(tags[k])}"/>`)
+    .map((k) => `<tag k="${escapeXml(k)}" v="${escapeXml(tags[k] ?? "")}"/>`)
     .join("");
 }
 
@@ -38,10 +38,10 @@ export interface ElementModify {
   version: number;
   tags: Tags;
   /** Nodes need their position repeated on modify; ways and relations need members. */
-  lat?: number;
-  lon?: number;
-  nodeRefs?: string[];
-  members?: { type: OsmType; ref: string; role: string }[];
+  lat?: number | undefined;
+  lon?: number | undefined;
+  nodeRefs?: string[] | undefined;
+  members?: { type: OsmType; ref: string; role: string }[] | undefined;
 }
 
 export function osmChangeXml(changesetId: string, creates: NodeCreate[], modifies: ElementModify[]): string {
@@ -87,7 +87,7 @@ export interface DiffEntry {
 
 function attrs(fragment: string): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const m of fragment.matchAll(/([a-z_]+)="([^"]*)"/gu)) out[m[1]] = m[2];
+  for (const m of fragment.matchAll(/([a-z_]+)="([^"]*)"/gu)) if (m[1] && m[2] !== undefined) out[m[1]] = m[2];
   return out;
 }
 
@@ -95,7 +95,7 @@ function attrs(fragment: string): Record<string, string> {
 export function parseDiffResult(xml: string): DiffEntry[] {
   const entries: DiffEntry[] = [];
   for (const m of xml.matchAll(/<(node|way|relation)\s([^>]*?)\/?>/gu)) {
-    const a = attrs(m[2]);
+    const a = attrs(m[2] ?? "");
     if (!a.old_id || !/^-?\d+$/u.test(a.old_id)) continue;
     entries.push({
       type: m[1] as OsmType,
@@ -112,10 +112,10 @@ export interface OsmElement {
   type: OsmType;
   id: string;
   version: number;
-  lat?: number;
-  lon?: number;
-  nodes?: string[];
-  members?: { type: OsmType; ref: string; role: string }[];
+  lat?: number | undefined;
+  lon?: number | undefined;
+  nodes?: string[] | undefined;
+  members?: { type: OsmType; ref: string; role: string }[] | undefined;
   tags: Tags;
   visible: boolean;
 }
@@ -129,21 +129,15 @@ export function parseElementJson(json: unknown): OsmElement {
   if (el.tags && typeof el.tags === "object") {
     for (const [k, v] of Object.entries(el.tags as Record<string, unknown>)) if (typeof v === "string") tags[k] = v;
   }
-  return {
-    type,
-    id: String(el.id),
-    version: Number(el.version),
-    lat: typeof el.lat === "number" ? el.lat : undefined,
-    lon: typeof el.lon === "number" ? el.lon : undefined,
-    nodes: Array.isArray(el.nodes) ? el.nodes.map(String) : undefined,
-    members: Array.isArray(el.members)
-      ? (el.members as Record<string, unknown>[]).map((m) => ({
-          type: m.type as OsmType,
-          ref: String(m.ref),
-          role: String(m.role ?? ""),
-        }))
-      : undefined,
-    tags,
-    visible: el.visible !== false,
-  };
+  const out: OsmElement = { type, id: String(el.id), version: Number(el.version), tags, visible: el.visible !== false };
+  if (typeof el.lat === "number") out.lat = el.lat;
+  if (typeof el.lon === "number") out.lon = el.lon;
+  if (Array.isArray(el.nodes)) out.nodes = el.nodes.map(String);
+  if (Array.isArray(el.members))
+    out.members = (el.members as Record<string, unknown>[]).map((m) => ({
+      type: m.type as OsmType,
+      ref: String(m.ref),
+      role: String(m.role ?? ""),
+    }));
+  return out;
 }

@@ -8,6 +8,8 @@ const agentNativePlugins = agentNative as unknown as (
 ) => any[];
 export default defineConfig({
   optimizeDeps: {
+    // Leaflet ships UMD only; pre-bundling gives it a real ESM namespace.
+    include: ["leaflet"],
     entries: [
       "app/entry.client.tsx",
       "app/root.tsx",

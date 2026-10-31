@@ -2,7 +2,7 @@
 import { defineAction } from "@agent-native/core/action";
 import { z } from "zod";
 
-import { osmBase, whoAmI } from "../server/lib/osm-client.js";
+import { osmBase, sandboxToken, whoAmI } from "../server/lib/osm-client.js";
 
 export default defineAction({
   description: "Which OSM server edits go to (always the development sandbox) and which sandbox account uploads them.",
@@ -12,10 +12,10 @@ export default defineAction({
   run: async () => {
     try {
       const base = osmBase();
-      const user = await whoAmI();
-      return { ok: true, live: false, apiBase: base, account: user.displayName, accountUrl: `${base}/user/${encodeURIComponent(user.displayName)}` };
+      const [user, token] = await Promise.all([whoAmI(), sandboxToken()]);
+      return { ok: true, live: false, ownAccount: token.own, apiBase: base, account: user.displayName, accountUrl: `${base}/user/${encodeURIComponent(user.displayName)}` };
     } catch (error) {
-      return { ok: false, live: false, apiBase: null, account: null, accountUrl: null, problem: error instanceof Error ? error.message : "unavailable" };
+      return { ok: false, live: false, ownAccount: false, apiBase: null, account: null, accountUrl: null, problem: error instanceof Error ? error.message : "unavailable" };
     }
   },
 });

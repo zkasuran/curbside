@@ -18,6 +18,8 @@ export const photos = pgTable("photos", {
   producer: text("producer").notNull(),
   imageUrl: text("image_url").notNull(),
   thumbUrl: text("thumb_url").notNull(),
+  /** Full-resolution picture, used only for zoomed crops the agent asks for. */
+  hdUrl: text("hd_url"),
   pageUrl: text("page_url").notNull(),
   inspectedAt: text("inspected_at"),
   createdAt: text("created_at").notNull().default(sql`now()`),
@@ -55,6 +57,7 @@ export const proposals = pgTable("proposals", {
   evidence: text("evidence").notNull(),
   /** JSON: normalised [x, y, w, h] box in the photo where the evidence is, or null. */
   evidenceBox: text("evidence_box"),
+  readingId: text("reading_id"),
   rationale: text("rationale").notNull(),
   confidence: real("confidence").notNull(),
   status: text("status", { enum: PROPOSAL_STATUSES }).notNull().default("pending"),
@@ -85,6 +88,41 @@ export const sandboxMirrors = pgTable("sandbox_mirrors", {
   sandboxType: text("sandbox_type").notNull(),
   sandboxId: text("sandbox_id").notNull(),
   changesetId: text("changeset_id").notNull(),
+  createdAt: text("created_at").notNull().default(sql`now()`),
+});
+
+/**
+ * Live map features around an imported area, fetched once from Overpass and reused for every
+ * photo inside it, so inspecting a photo never waits on a busy public Overpass instance.
+ */
+export const areaFeatures = pgTable("area_features", {
+  id: text("id").primaryKey(),
+  ownerEmail: text("owner_email").notNull(),
+  orgId: text("org_id"),
+  lat: real("lat").notNull(),
+  lon: real("lon").notNull(),
+  radiusM: real("radius_m").notNull(),
+  features: text("features").notNull(),
+  fetchedAt: text("fetched_at").notNull(),
+});
+
+/** A sign the agent transcribed from a photo before it was shown the map's names. */
+export const signReadings = pgTable("sign_readings", {
+  id: text("id").primaryKey(),
+  ownerEmail: text("owner_email").notNull(),
+  orgId: text("org_id"),
+  photoId: text("photo_id").notNull(),
+  text: text("text").notNull(),
+  kind: text("kind"),
+  /** JSON [x, y, w, h] in the frame, or null. */
+  box: text("box"),
+  legibility: text("legibility", { enum: ["clear", "partial"] }).notNull(),
+  /** JSON: other details read off the sign (opening hours, phone, website). */
+  details: text("details").notNull(),
+  verdict: text("verdict").notNull(),
+  matchTarget: text("match_target"),
+  matchName: text("match_name"),
+  similarity: real("similarity"),
   createdAt: text("created_at").notNull().default(sql`now()`),
 });
 

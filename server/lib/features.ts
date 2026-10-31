@@ -1,22 +1,50 @@
 // SPDX-License-Identifier: LicenseRef-zkasuran-SAND-1.0
 // Which live map features a photo can see, and where in the frame they should appear.
 
+import { and, desc, gte } from "drizzle-orm";
+
+import { getDb, schema } from "../db/index.js";
+import { ownedBy, parseJson, type Caller } from "./common.js";
 import { angleDiff, bearingDeg, distanceM, inViewCone, type LatLon } from "./geo.js";
 import { LIMITS } from "./limits.js";
 import { featuresAround, type LiveFeature } from "./overpass.js";
 import { trimTags } from "./tags.js";
 
-const cache = new Map<string, { at: number; features: LiveFeature[] }>();
-const CACHE_MS = 5 * 60_000;
+/**
+ * Live features within `radiusM` of `p`. Reuses a stored area that covers the whole circle when
+ * one is fresh, otherwise asks Overpass once and stores the answer for the next photos nearby.
+ */
+export async function cachedFeaturesAround(who: Caller, p: LatLon, radiusM: number): Promise<LiveFeature[]> {
+  const db = getDb();
+  const since = new Date(Date.now() - LIMITS.areaFeaturesMaxAgeMs).toISOString();
+  const areas = await db
+    .select()
+    .from(schema.areaFeatures)
+    .where(and(ownedBy(schema.areaFeatures, who), gte(schema.areaFeatures.fetchedAt, since)))
+    .orderBy(desc(schema.areaFeatures.fetchedAt))
+    .limit(20);
+  const cover = areas.find((a) => distanceM(a, p) + radiusM <= a.radiusM);
+  if (cover) {
+    return parseJson<LiveFeature[]>(cover.features, []).filter((f) => distanceM(p, f) <= radiusM);
+  }
+  return storeArea(who, p, radiusM);
+}
 
-/** Overpass is a shared community service, so repeat looks at one spot reuse a recent answer. */
-export async function cachedFeaturesAround(p: LatLon, radiusM: number): Promise<LiveFeature[]> {
-  const key = `${p.lat.toFixed(5)},${p.lon.toFixed(5)},${radiusM}`;
-  const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < CACHE_MS) return hit.features;
+/** Fetch an area from Overpass and keep it. */
+export async function storeArea(who: Caller, p: LatLon, radiusM: number): Promise<LiveFeature[]> {
   const features = await featuresAround(p.lat, p.lon, radiusM);
-  if (cache.size > 200) cache.clear();
-  cache.set(key, { at: Date.now(), features });
+  await getDb()
+    .insert(schema.areaFeatures)
+    .values({
+      id: crypto.randomUUID(),
+      ownerEmail: who.ownerEmail,
+      orgId: who.orgId,
+      lat: p.lat,
+      lon: p.lon,
+      radiusM,
+      features: JSON.stringify(features),
+      fetchedAt: new Date().toISOString(),
+    });
   return features;
 }
 

@@ -281,3 +281,14 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.34);
 }
+
+/* Curbside map: OSM tiles in the dark theme are inverted and softened so the map does not glare. */
+.dark .curbside-tiles {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.6);
+}
+.curbside-map {
+  background: hsl(var(--muted));
+}
+.leaflet-container {
+  font: inherit;
+}

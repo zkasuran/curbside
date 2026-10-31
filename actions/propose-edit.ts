@@ -40,6 +40,7 @@ export default defineAction({
       .describe("Where the evidence is in the photo: [x, y, w, h] as fractions 0 to 1 of width and height"),
     rationale: z.string().min(3).max(LIMITS.rationaleMaxChars).describe("Why the map should change, in one or two sentences"),
     confidence: z.coerce.number().min(0).max(1).describe("0 to 1: how sure the photo makes you"),
+    readingId: z.string().uuid().optional().describe("The record-signs reading this edit rests on; its box becomes the evidence box"),
     lat: z.coerce.number().min(-90).max(90).optional().describe("create only: point latitude; default is 12 m in front of the camera"),
     lon: z.coerce.number().min(-180).max(180).optional().describe("create only: point longitude"),
   }),
@@ -53,7 +54,7 @@ export default defineAction({
       .limit(1);
     if (!photo) fail("Photo not found in your survey.", { errorCode: "not_found", statusCode: 404 });
 
-    const [{ n }] = await db
+    const [{ n } = { n: 0 }] = await db
       .select({ n: count() })
       .from(schema.proposals)
       .where(and(ownedBy(schema.proposals, who), inArray(schema.proposals.status, ["pending", "approved"])));
@@ -64,7 +65,16 @@ export default defineAction({
       assertPhotoFresh(photo.capturedAt);
       const patch = validatePatch({ set: args.set, remove: args.remove });
       validateSpecialValues(patch.set);
-      const evidenceBox = validateEvidenceBox(args.evidenceBox ?? null);
+      let evidenceBox = validateEvidenceBox(args.evidenceBox ?? null);
+      if (args.readingId) {
+        const [reading] = await db
+          .select()
+          .from(schema.signReadings)
+          .where(and(eq(schema.signReadings.id, args.readingId), ownedBy(schema.signReadings, who), eq(schema.signReadings.photoId, photo.id)))
+          .limit(1);
+        if (!reading) fail("That reading is not from this photo.", { errorCode: "reading_not_found", statusCode: 404 });
+        evidenceBox ??= reading.box ? (JSON.parse(reading.box) as [number, number, number, number]) : null;
+      }
 
       let tagsBefore: Tags = {};
       let lat: number;
@@ -94,7 +104,7 @@ export default defineAction({
             details: { proposalId: open.id },
           });
         // The feature list inspect-photo just used is the snapshot the agent reasoned about.
-        const seen = (await cachedFeaturesAround(photo, LIMITS.featureRadiusM).catch(() => [])).find(
+        const seen = (await cachedFeaturesAround(who, photo, LIMITS.featureRadiusM).catch(() => [])).find(
           (f) => f.type === args.osmType && f.id === args.osmId,
         );
         const live = seen ?? (await liveElement(args.osmType, args.osmId));
@@ -123,7 +133,7 @@ export default defineAction({
           fail("The new point is too far from the photo that shows it.", { errorCode: "target_out_of_view", statusCode: 400 });
         lat = round7(at.lat);
         lon = round7(at.lon);
-        const live = await cachedFeaturesAround(at, LIMITS.duplicateRadiusM);
+        const live = await cachedFeaturesAround(who, at, LIMITS.duplicateRadiusM);
         const pendingCreates = await db
           .select()
           .from(schema.proposals)
@@ -156,6 +166,7 @@ export default defineAction({
         patch: JSON.stringify(finalPatch),
         evidence: args.evidence.trim(),
         evidenceBox: evidenceBox ? JSON.stringify(evidenceBox) : null,
+        readingId: args.readingId ?? null,
         rationale: args.rationale.trim(),
         confidence: Math.round(args.confidence * 100) / 100,
         status: "pending" as const,
@@ -164,6 +175,7 @@ export default defineAction({
       };
       await db.insert(schema.proposals).values(row);
       const [saved] = await db.select().from(schema.proposals).where(eq(schema.proposals.id, row.id));
+      if (!saved) fail("The proposal was not saved.", { errorCode: "not_saved", statusCode: 500 });
       return { ...proposalDto(saved), message: `Drafted "${saved.title}". It waits for a person to review it.` };
     } catch (error) {
       rethrow(error);

@@ -20,6 +20,8 @@ export interface FetchOptions {
   body?: string;
   timeoutMs?: number;
   maxBytes?: number;
+  /** Which redirect targets may be followed. Default: the same host only. */
+  allowRedirectTo?: (url: URL) => boolean;
 }
 
 /** Read a body but stop at `maxBytes`, so a hostile or broken server cannot exhaust memory. */
@@ -53,28 +55,40 @@ async function readCapped(res: Response, maxBytes: number): Promise<Uint8Array> 
 }
 
 export async function fetchBytes(url: string, opts: FetchOptions = {}): Promise<{ bytes: Uint8Array; res: Response }> {
-  const parsed = new URL(url);
-  if (parsed.protocol !== "https:") throw new HttpError("Only https URLs are fetched.", 400, "");
+  let target = new URL(url);
+  if (target.protocol !== "https:") throw new HttpError("Only https URLs are fetched.", 400, "");
+  const first = target.host;
+  const allow = opts.allowRedirectTo ?? ((u: URL) => u.host === first);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? LIMITS.fetchTimeoutMs);
   try {
-    const res = await fetch(parsed, {
-      method: opts.method ?? "GET",
-      headers: { "User-Agent": USER_AGENT, ...opts.headers },
-      body: opts.body,
-      signal: controller.signal,
-      redirect: "follow",
-    });
-    const bytes = await readCapped(res, opts.maxBytes ?? LIMITS.responseMaxBytes);
-    if (!res.ok) {
-      const body = new TextDecoder().decode(bytes.slice(0, 2000));
-      throw new HttpError(`${opts.method ?? "GET"} ${parsed.host}${parsed.pathname} returned ${res.status}`, res.status, body);
+    for (let hop = 0; ; hop++) {
+      const res = await fetch(target, {
+        method: opts.method ?? "GET",
+        headers: { "User-Agent": USER_AGENT, ...opts.headers },
+        ...(opts.body !== undefined ? { body: opts.body } : {}),
+        signal: controller.signal,
+        redirect: "manual",
+      });
+      if (res.status >= 300 && res.status < 400 && res.headers.get("location")) {
+        await res.body?.cancel();
+        const next = new URL(res.headers.get("location") as string, target);
+        if (hop >= 3 || next.protocol !== "https:" || !allow(next))
+          throw new HttpError(`Refused a redirect from ${target.host} to ${next.host}.`, 502, "");
+        target = next;
+        continue;
+      }
+      const bytes = await readCapped(res, opts.maxBytes ?? LIMITS.responseMaxBytes);
+      if (!res.ok) {
+        const body = new TextDecoder().decode(bytes.slice(0, 2000));
+        throw new HttpError(`${opts.method ?? "GET"} ${target.host}${target.pathname} returned ${res.status}`, res.status, body);
+      }
+      return { bytes, res };
     }
-    return { bytes, res };
   } catch (error) {
     if (error instanceof HttpError) throw error;
-    if (controller.signal.aborted) throw new HttpError(`${parsed.host} did not answer in time.`, 504, "");
-    throw new HttpError(`${parsed.host} could not be reached.`, 502, "");
+    if (controller.signal.aborted) throw new HttpError(`${target.host} did not answer in time.`, 504, "");
+    throw new HttpError(`${target.host} could not be reached.`, 502, "");
   } finally {
     clearTimeout(timer);
   }
