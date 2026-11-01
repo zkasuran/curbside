@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
 step() { printf '\n== %s\n' "$*"; }
 
 OURS=(actions/*.ts server/lib/*.ts server/db/*.ts server/plugins/db.ts server/plugins/secrets.ts server/plugins/agent-engine.ts server/plugins/agent-engine.ts
-  app/components/survey/*.ts app/components/survey/*.tsx app/routes/survey.tsx server/middleware/0-security-headers.ts tests/*.ts scripts/e2e-sandbox.mjs)
+  app/components/survey/*.ts app/components/survey/*.tsx app/routes/survey.tsx server/middleware/0-security-headers.ts server/auth-page.ts tests/*.ts scripts/e2e-sandbox.mjs)
 
 step "lockfile is complete and unchanged"
 pnpm install --frozen-lockfile --prefer-offline >/dev/null

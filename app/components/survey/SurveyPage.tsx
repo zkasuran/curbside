@@ -11,9 +11,12 @@ import {
 } from "@agent-native/toolkit/app-shell/header-actions";
 import {
   IconCamera,
+  IconCircleCheck,
   IconCloudUpload,
   IconExternalLink,
   IconMapPin,
+  IconPhoto,
+  IconScan,
   IconShieldCheck,
   IconSparkles,
 } from "@tabler/icons-react";
@@ -42,6 +45,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
+import { CurbsideMark } from "../layout/CurbsideMark";
 import {
   DEMO_STREET,
   FILTERS,
@@ -53,6 +57,46 @@ import { PhotoViewer } from "./PhotoViewer";
 import { ProposalCard } from "./ProposalCard";
 
 const SurveyMap = lazy(() => import("./SurveyMap"));
+
+const WELCOME_STEPS = [
+  {
+    icon: IconPhoto,
+    title: "Load photos",
+    body: "Open street photos land on the map, each with its view cone.",
+  },
+  {
+    icon: IconScan,
+    title: "Agent reads signs",
+    body: "It reads every shopfront without seeing the map names.",
+  },
+  {
+    icon: IconCircleCheck,
+    title: "You approve",
+    body: "Each fix waits for you, then goes to the OSM development sandbox.",
+  },
+] as const;
+
+/** Same outline as a ProposalCard: kind chip and title, tag table, evidence line, buttons. */
+function QueueSkeleton() {
+  return (
+    <div className="rounded-xl border border-border bg-card p-3" aria-hidden>
+      <div className="flex items-start gap-2">
+        <Skeleton className="h-5 w-14 rounded-md" />
+        <div className="flex-1 space-y-1.5">
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-1/3" />
+        </div>
+        <Skeleton className="h-5 w-20 rounded-full" />
+      </div>
+      <Skeleton className="mt-3 h-24 w-full rounded-lg" />
+      <Skeleton className="mt-3 h-8 w-11/12" />
+      <div className="mt-3 flex gap-2">
+        <Skeleton className="h-8 w-24 rounded-md" />
+        <Skeleton className="h-8 w-20 rounded-md" />
+      </div>
+    </div>
+  );
+}
 
 type UploadReport = {
   changesetId: string | null;
@@ -345,18 +389,48 @@ export function SurveyPage() {
             <Skeleton className="absolute inset-0 rounded-none" />
           )}
           {!loading && photos.length === 0 ? (
-            <div className="pointer-events-none absolute inset-x-0 bottom-6 z-[500] flex justify-center px-4">
-              <div className="pointer-events-auto max-w-md rounded-xl border border-border bg-background/95 p-4 text-sm shadow-lg backdrop-blur">
-                <p className="font-medium">
-                  Walk a street without leaving your desk.
-                </p>
-                <p className="mt-1 text-muted-foreground">
-                  Load open street photos, let the agent compare every shopfront
-                  with the map, then approve the fixes you agree with.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
+            <div className="pointer-events-none absolute inset-0 z-[500] flex items-end justify-center p-3 @md:p-6 @4xl:items-center">
+              <section
+                aria-labelledby="survey-welcome-title"
+                className="pointer-events-auto w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-background/95 shadow-2xl shadow-stone-900/10 backdrop-blur-md"
+              >
+                <div className="flex items-center gap-3 border-b border-border bg-amber-500/[0.07] px-4 py-3 @md:px-5">
+                  <CurbsideMark className="size-9 shrink-0 rounded-lg shadow-sm" />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                      Welcome to Curbside
+                    </p>
+                    <h2
+                      id="survey-welcome-title"
+                      className="text-base font-semibold leading-snug tracking-tight @md:text-lg"
+                    >
+                      Walk a street without leaving your desk.
+                    </h2>
+                  </div>
+                </div>
+                <ol className="grid grid-cols-3 gap-2 px-4 pt-4 @md:gap-3 @md:px-5">
+                  {WELCOME_STEPS.map((step, i) => (
+                    <li
+                      key={step.title}
+                      className="rounded-xl border border-border bg-card p-2.5 @md:p-3"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-amber-500 text-[11px] font-bold text-stone-950">
+                          {i + 1}
+                        </span>
+                        <step.icon className="size-4 text-muted-foreground" />
+                      </span>
+                      <p className="mt-2 text-[13px] font-semibold leading-tight">
+                        {step.title}
+                      </p>
+                      <p className="mt-1 hidden text-xs leading-snug text-muted-foreground @md:block">
+                        {step.body}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+                <div className="flex flex-wrap items-center gap-2 px-4 pb-4 pt-4 @md:px-5">
                   <Button
-                    size="sm"
                     onClick={() =>
                       importPhotos.mutate({
                         lat: DEMO_STREET.lat,
@@ -369,11 +443,15 @@ export function SurveyPage() {
                   >
                     <IconMapPin className="size-4" /> Load {DEMO_STREET.label}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={surveyArea}>
+                  <Button variant="outline" onClick={surveyArea}>
                     <IconSparkles className="size-4" /> Ask the agent
                   </Button>
+                  <span className="ml-auto hidden items-center gap-1 text-xs text-muted-foreground @lg:inline-flex">
+                    <IconShieldCheck className="size-3.5" /> OSM development
+                    sandbox
+                  </span>
                 </div>
-              </div>
+              </section>
             </div>
           ) : null}
         </div>
@@ -397,7 +475,14 @@ export function SurveyPage() {
                 )}
               >
                 {f.label}
-                <span className="ml-1 tabular-nums opacity-70">
+                <span
+                  className={cn(
+                    "ml-1 tabular-nums",
+                    f.id === "pending" && (counts[f.id] ?? 0) > 0
+                      ? "rounded-full bg-amber-500 px-1.5 py-px font-semibold text-stone-950"
+                      : "opacity-70",
+                  )}
+                >
                   {counts[f.id] ?? 0}
                 </span>
               </button>
@@ -420,9 +505,7 @@ export function SurveyPage() {
               />
             ) : null}
             {loading ? (
-              Array.from({ length: 3 }, (_, i) => (
-                <Skeleton key={i} className="h-48 rounded-xl" />
-              ))
+              Array.from({ length: 3 }, (_, i) => <QueueSkeleton key={i} />)
             ) : visible.length === 0 ? (
               <p className="px-1 py-8 text-center text-sm text-muted-foreground">
                 {proposals.length === 0
