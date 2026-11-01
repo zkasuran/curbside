@@ -43,6 +43,8 @@ export const LIMITS = {
   responseMaxBytes: 4_000_000,
   fetchTimeoutMs: 20_000,
   overpassTimeoutMs: 25_000,
+  /** Total time spent across Overpass instances and retries for one question. */
+  overpassBudgetMs: 70_000,
   /** How long a fetched area of live features is reused before Overpass is asked again. */
   areaFeaturesMaxAgeMs: 24 * 3_600_000,
   /** An upload claim older than this is treated as interrupted and reconciled. */

@@ -34,12 +34,14 @@ export default defineAction({
     if (!photo) fail("Photo not found in your survey.", { errorCode: "not_found", statusCode: 404 });
 
     let inView;
+    let mapUnavailable = false;
     const images: { data: string; mediaType: "image/jpeg"; label: string }[] = [];
     const credit = `${photo.producer}, Panoramax, ${photo.license}`;
     const useHd = Boolean(photo.hdUrl) && photo.fov !== null && photo.fov < 300;
     try {
       const [features, source] = await Promise.all([
-        cachedFeaturesAround(who, photo, LIMITS.featureRadiusM),
+        // Pictures are still worth reading when the public map service is busy.
+        cachedFeaturesAround(who, photo, LIMITS.featureRadiusM).catch(() => null),
         includeImage
           ? // 360 panoramas are huge at full resolution; their standard size is enough to read from.
             downloadImage(useHd ? (photo.hdUrl as string) : photo.imageUrl, useHd ? LIMITS.hdImageMaxBytes : LIMITS.imageMaxBytes).catch(() =>
@@ -47,7 +49,8 @@ export default defineAction({
             )
           : Promise.resolve(null),
       ]);
-      inView = featuresInView(photo, features);
+      mapUnavailable = features === null;
+      inView = featuresInView(photo, features ?? []);
       if (source) {
         const fmt = (b: Box) => b.map((n) => n.toFixed(2)).join(", ");
         if (zoom) {
@@ -81,6 +84,7 @@ export default defineAction({
     const ageDays = Math.round((Date.now() - Date.parse(photo.capturedAt)) / 86_400_000);
     return {
       photo: { ...photoDto(photo), ageDays },
+      ...(mapUnavailable ? { mapUnavailable: "The live map could not be fetched right now; read the signs anyway, record-signs retries the map." } : {}),
       mappedFeaturesInView: inView.map((f) => ({
         ...blindFeature(f),
         openProposals: open.filter((p) => p.osmType === f.type && p.osmId === f.id).length,

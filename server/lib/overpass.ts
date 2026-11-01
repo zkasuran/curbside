@@ -63,8 +63,10 @@ export function parseOverpass(json: unknown): LiveFeature[] {
 /** Try each instance, twice round with a pause, because busy instances answer 429 or 504. */
 async function run(query: string): Promise<LiveFeature[]> {
   let last: unknown;
+  const deadline = Date.now() + LIMITS.overpassBudgetMs;
   for (let round = 0; round < 2; round++) {
     for (const url of overpassUrls()) {
+      if (Date.now() > deadline) throw last ?? new HttpError("Overpass did not answer in time.", 504, "");
       try {
         const json = await fetchJson<unknown>(url, {
           method: "POST",

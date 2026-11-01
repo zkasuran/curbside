@@ -53,6 +53,7 @@ export default function SurveyMap(props: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    let resize: ResizeObserver | null = null;
     void Promise.resolve(LeafletNs).then((mod) => {
       if (cancelled || !el.current || map.current) return;
       const ns = mod as unknown as typeof Leaflet & { default?: typeof Leaflet };
@@ -75,10 +76,17 @@ export default function SurveyMap(props: Props) {
       });
       layer.current = leaflet.layerGroup().addTo(m);
       map.current = m;
+      // The panel around the map resizes (agent sidebar, phone layout); keep tiles and bounds right.
+      resize = new ResizeObserver(() => {
+        m.invalidateSize({ pan: false });
+        if (!fitted.current) draw();
+      });
+      resize.observe(el.current);
       draw();
     });
     return () => {
       cancelled = true;
+      resize?.disconnect();
       map.current?.remove();
       map.current = null;
     };
@@ -132,7 +140,8 @@ export default function SurveyMap(props: Props) {
         .on("click", () => cb.current.onSelectProposal(p.id))
         .addTo(group);
     }
-    if (!fitted.current && photos.length) {
+    const size = m.getSize();
+    if (!fitted.current && photos.length && size.x > 50 && size.y > 50) {
       fitted.current = true;
       const b = leaflet.latLngBounds(photos.map((p) => [p.lat, p.lon] as [number, number]));
       m.fitBounds(b.pad(0.6), { maxZoom: 19 });
