@@ -82,7 +82,9 @@ export default defineAction({
       .string()
       .uuid()
       .optional()
-      .describe("Agent only: the sign reading a changed name or confirmation rests on"),
+      .describe(
+        "Agent only: the sign reading a changed name or confirmation rests on",
+      ),
   }),
   run: async (args, ctx) => {
     const who = caller(ctx);
