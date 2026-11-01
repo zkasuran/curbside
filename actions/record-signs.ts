@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: LicenseRef-zkasuran-SAND-1.0
 import { defineAction, fail } from "@agent-native/core/action";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb, schema } from "../server/db/index.js";
@@ -11,7 +11,10 @@ import {
 } from "../server/lib/features.js";
 import { LIMITS } from "../server/lib/limits.js";
 import { matchReading, placeAtSign } from "../server/lib/match.js";
-import { validateEvidenceBox } from "../server/lib/proposal-rules.js";
+import {
+  boxInside,
+  validateEvidenceBox,
+} from "../server/lib/proposal-rules.js";
 import { normaliseValue } from "../server/lib/tags.js";
 
 const detailValue = z.string().max(200);
@@ -76,6 +79,23 @@ export default defineAction({
         statusCode: 404,
       });
     try {
+      // Close-ups asked for on this photo recently: a reading inside one was read up close.
+      const zoomSince = new Date(
+        Date.now() - LIMITS.zoomConfirmWindowMs,
+      ).toISOString();
+      const zooms = (
+        await db
+          .select({ box: schema.photoZooms.box })
+          .from(schema.photoZooms)
+          .where(
+            and(
+              ownedBy(schema.photoZooms, who),
+              eq(schema.photoZooms.photoId, photoId),
+              gte(schema.photoZooms.createdAt, zoomSince),
+            ),
+          )
+          .limit(50)
+      ).map((z) => JSON.parse(z.box) as [number, number, number, number]);
       const inView = featuresInView(
         photo,
         await cachedFeaturesAround(who, photo, LIMITS.featureRadiusM),
@@ -103,6 +123,7 @@ export default defineAction({
             matchName: m.feature?.tags.name ?? null,
             similarity: m.similarity,
             atSignTarget: atSign?.target ?? null,
+            zoomConfirmed: box && zooms.some((z) => boxInside(box, z)) ? 1 : 0,
           },
           atSign,
           match: m,
@@ -117,6 +138,7 @@ export default defineAction({
           readingId: row.id,
           read: row.text,
           legibility: row.legibility,
+          readUpClose: row.zoomConfirmed === 1,
           box: row.box ? JSON.parse(row.box) : null,
           details: JSON.parse(row.details),
           verdict: match.verdict,
@@ -152,7 +174,7 @@ export default defineAction({
             distanceM: f.distanceM,
           })),
         guidance:
-          "same: confirm with check_date set to the photo date only if useful. word_order or differs: propose a modify of name on mapFeature.target, quoting the reading. not_on_map with clear legibility: propose a create. A feature in notRead is not proof of closure; it may be hidden or out of frame.",
+          "A new place needs a reading made up close: zoom on its box with inspect-photo, read it again, record it again. same: confirm with check_date set to the photo date only if useful. word_order or differs: propose a modify of name on mapFeature.target, quoting the reading. not_on_map with clear legibility: propose a create. A feature in notRead is not proof of closure; it may be hidden or out of frame.",
       };
     } catch (error) {
       rethrow(error);

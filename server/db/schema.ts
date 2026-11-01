@@ -135,9 +135,21 @@ export const signReadings = pgTable("sign_readings", {
   similarity: real("similarity"),
   /** A mapped place standing where the sign is in the frame, whatever its name. */
   atSignTarget: text("at_sign_target"),
+  /** 1 when the sign was read again on a close-up of its box (required for a new place). */
+  zoomConfirmed: integer("zoom_confirmed").notNull().default(0),
   createdAt: text("created_at")
     .notNull()
     .default(sql`now()`),
+});
+
+/** Close-ups the agent asked for, so a reading can show it looked at the sign up close. */
+export const photoZooms = pgTable("photo_zooms", {
+  id: text("id").primaryKey(),
+  ownerEmail: text("owner_email").notNull(),
+  orgId: text("org_id"),
+  photoId: text("photo_id").notNull(),
+  box: text("box").notNull(),
+  createdAt: text("created_at").notNull(),
 });
 
 /** One upload to the sandbox and what verification found afterwards. */

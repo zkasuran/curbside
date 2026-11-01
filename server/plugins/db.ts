@@ -132,6 +132,20 @@ ALTER TABLE proposals ADD COLUMN IF NOT EXISTS reading_id TEXT`,
       name: "curbside-reading-at-sign",
       sql: `ALTER TABLE sign_readings ADD COLUMN IF NOT EXISTS at_sign_target TEXT`,
     },
+    {
+      version: 6,
+      name: "curbside-zoom-confirmation",
+      sql: `ALTER TABLE sign_readings ADD COLUMN IF NOT EXISTS zoom_confirmed INTEGER NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS photo_zooms (
+  id TEXT PRIMARY KEY,
+  owner_email TEXT NOT NULL,
+  org_id TEXT,
+  photo_id TEXT NOT NULL REFERENCES photos(id),
+  box TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS photo_zooms_owner_photo_idx ON photo_zooms (owner_email, photo_id, created_at)`,
+    },
   ],
   { table: "curbside_migrations" },
 );

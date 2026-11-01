@@ -11,6 +11,8 @@ export const LIMITS = {
   tagsPerFeature: 60,
   evidenceMaxChars: 400,
   readingsPerCall: 30,
+  /** A close-up counts as confirmation for readings recorded within this long after it. */
+  zoomConfirmWindowMs: 15 * 60_000,
   readingTextMaxChars: 120,
   rationaleMaxChars: 600,
   noteMaxChars: 400,

@@ -461,6 +461,10 @@ check(
 );
 
 // 9. Interrupted upload: the write lands, then the process dies before it records the outcome.
+await act("inspect-photo", {
+  photoId: photo.id,
+  zoom: [0.15, 0.45, 0.2, 0.15],
+});
 const poster = await act("record-signs", {
   photoId: photo.id,
   readings: [
@@ -489,6 +493,35 @@ check(
   posterCreate.error,
 );
 const floristName = `Curbside e2e florist ${Date.now().toString(36)}`;
+const farRead = await act("record-signs", {
+  photoId: photo.id,
+  readings: [
+    {
+      text: floristName,
+      kind: "florist",
+      box: [0.7, 0.4, 0.1, 0.06],
+      legibility: "clear",
+    },
+  ],
+});
+const farCreate = await act("propose-edit", {
+  photoId: photo.id,
+  kind: "create",
+  set: { shop: "florist", name: floristName },
+  evidence: "x x",
+  rationale: "x x",
+  confidence: 0.5,
+  readingId: farRead.body.readings?.[0]?.readingId,
+});
+check(
+  "a new place read only from the wide view, without a close-up, is refused",
+  /up close/u.test(farCreate.error),
+  farCreate.error,
+);
+await act("inspect-photo", {
+  photoId: photo.id,
+  zoom: [0.65, 0.35, 0.2, 0.16],
+});
 const floristRec = await act("record-signs", {
   photoId: photo.id,
   readings: [

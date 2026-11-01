@@ -117,3 +117,19 @@ export function validateSpecialValues(set: Tags, now = new Date()): void {
       throw new TagError(`${key} cannot be in the future.`, "invalid_tag");
   }
 }
+
+/** Whether box `a` (x, y, w, h) lies inside `b`, allowing a small margin for imprecise boxes. */
+export function boxInside(
+  a: readonly number[],
+  b: readonly number[],
+  margin = 0.02,
+): boolean {
+  const [ax = 0, ay = 0, aw = 0, ah = 0] = a;
+  const [bx = 0, by = 0, bw = 0, bh = 0] = b;
+  return (
+    ax >= bx - margin &&
+    ay >= by - margin &&
+    ax + aw <= bx + bw + margin &&
+    ay + ah <= by + bh + margin
+  );
+}

@@ -90,6 +90,14 @@ export default defineAction({
             mediaType: "image/jpeg",
             label: `Close-up of [${fmt(box)}] of photo ${photo.id} (${credit})`,
           });
+          await db.insert(schema.photoZooms).values({
+            id: crypto.randomUUID(),
+            ownerEmail: who.ownerEmail,
+            orgId: who.orgId,
+            photoId: photo.id,
+            box: JSON.stringify(box),
+            createdAt: nowIso(),
+          });
         } else {
           images.push({
             data: await cropJpeg(source, null),

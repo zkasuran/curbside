@@ -19,8 +19,8 @@
   <img alt="Built with Agent-Native" src="https://img.shields.io/badge/built%20with-Agent--Native%200.222-1c1917?style=flat-square">
   <img alt="OpenStreetMap" src="https://img.shields.io/badge/map-OpenStreetMap-7ebc6f?style=flat-square">
   <img alt="Panoramax" src="https://img.shields.io/badge/photos-Panoramax-f59e0b?style=flat-square">
-  <img alt="Tests" src="https://img.shields.io/badge/unit%20tests-61%20passing-2ea44f?style=flat-square">
-  <img alt="Sandbox e2e" src="https://img.shields.io/badge/live%20sandbox%20e2e-32%20checks-2ea44f?style=flat-square">
+  <img alt="Tests" src="https://img.shields.io/badge/unit%20tests-62%20passing-2ea44f?style=flat-square">
+  <img alt="Sandbox e2e" src="https://img.shields.io/badge/live%20sandbox%20e2e-33%20checks-2ea44f?style=flat-square">
   <img alt="Audit" src="https://img.shields.io/badge/npm%20audit-0%20high%20or%20critical-2ea44f?style=flat-square">
   <img alt="Licence" src="https://img.shields.io/badge/licence-SAND--1.0-555?style=flat-square">
 </p>
@@ -82,7 +82,7 @@ sequenceDiagram
 
 1. **One action, every surface.** The 12 Curbside actions are the agent's tools and the screen's API at once. The Approve button and the agent's `review-proposal` call are the same code, so they cannot drift apart.
 2. **Read blind, then compare.** `inspect-photo` tells the agent where mapped places sit in the frame but not their names. The agent has to read the sign. `record-signs` matches each reading to the map on the server.
-3. **The server holds the line.** A rename needs a reading that matched that same element and spells nearly the same name. A new place needs a reading that matched nothing. A misread such as "SAMIRA" for "SAKURA" is refused, with a request to zoom in and read again.
+3. **The server holds the line.** A rename needs a reading that matched that same element and spells nearly the same name. A new place needs a reading that matched nothing, read again on a close-up. A misread such as "SAMIRA" for "SAKURA" is refused, with a request to zoom in and read again.
 4. **An approval is a snapshot.** Before writing, Curbside re-reads the element. If anyone changed a key the edit touches, the edit stops as a conflict. Keys it does not touch are merged, so nobody's work is overwritten.
 5. **Shared state, both ways.** The screen writes what you are looking at into application state, so "survey this photo" or "what's left to review?" need no ids. The agent moves your screen with `navigate`.
 
@@ -103,7 +103,7 @@ sequenceDiagram
 |---|---|---|---|
 | "Bar Monaco" | "Monaco Bar" | Rename | Reading matched this element, same words in another order |
 | "Sakoura" spelt slightly differently | "Sakura" | Rename | Similarity 0.8 or more, name equals the reading |
-| "UNIQUE" clothes shop | nothing nearby | New place | Reading matched nothing within 60 m |
+| A shop name nobody mapped | nothing nearby | New place | Reading matched nothing within 60 m, was read again on a close-up and does not sit on a mapped shopfront |
 | "SAKURA" unchanged | "Sakura" | `check_date` = photo date | Never moves a newer date backwards |
 | Opening hours on the door | other hours | Hours update | Re-checked against the element at upload |
 
@@ -126,6 +126,7 @@ sequenceDiagram
 | No rename without a matching reading | e2e: rename with no reading, with another sign's reading and with a misread all refused |
 | No duplicate places | e2e: "Bar Monaco" as a new point is refused, it already exists as "Monaco Bar" |
 | Posters are not places | e2e: text read on a mapped shopfront cannot become a new place |
+| New places are read up close | e2e: a new place read only from the wide view is refused until the agent zooms in and reads it again |
 | Stale approvals do not overwrite | e2e: another mapper edits the hours after review, upload holds it as a conflict, their edit survives |
 | Merges keep others' work | e2e: after rebase and re-approval, the other mapper's phone number is still there |
 | Retries do not write twice | e2e: re-uploading an applied edit leaves the version unchanged |
@@ -135,8 +136,8 @@ sequenceDiagram
 The full table of attackers, defences and tests is in **[SECURITY.md](SECURITY.md)**. One command runs the release gate:
 
 ```bash
-./verify.sh          # lockfile, format, strict typecheck, Agent-Native doctor, 61 unit tests, audit, licence headers, secrets scan, build
-./verify.sh --e2e    # plus the 32-check live proof against the OSM sandbox (needs pnpm dev running)
+./verify.sh          # lockfile, format, strict typecheck, Agent-Native doctor, 62 unit tests, audit, licence headers, secrets scan, build
+./verify.sh --e2e    # plus the 33-check live proof against the OSM sandbox (needs pnpm dev running)
 ```
 
 Latest live proof: [`docs/evidence/`](docs/evidence/), with every action call, every sandbox read and the changeset ids.

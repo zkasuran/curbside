@@ -62,6 +62,11 @@ export async function assertReadingBacksEdit(
           statusCode: 409,
         },
       );
+    if (reading.zoomConfirmed !== 1)
+      fail(
+        `Read "${reading.text}" up close before adding it: call inspect-photo with zoom on its box, read the sign again, then record-signs again and use that reading.`,
+        { errorCode: "zoom_required", statusCode: 409 },
+      );
     if (reading.atSignTarget)
       fail(
         `"${reading.text}" sits where ${reading.atSignTarget} is mapped in the photo. It is likely a poster, a slogan or a cut-off sign of that place, so it cannot back a new place.`,

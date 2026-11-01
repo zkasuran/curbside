@@ -221,3 +221,16 @@ describe("placeAtSign ignores street furniture", () => {
     expect(placeAtSign(0.25, fs)).toBeNull();
   });
 });
+
+describe("boxInside", () => {
+  it("accepts a sign box inside a close-up, with a small margin, and rejects one outside", async () => {
+    const { boxInside } = await import("../server/lib/proposal-rules");
+    expect(boxInside([0.7, 0.4, 0.1, 0.06], [0.65, 0.35, 0.2, 0.16])).toBe(
+      true,
+    );
+    expect(boxInside([0.7, 0.4, 0.1, 0.06], [0.66, 0.39, 0.13, 0.08])).toBe(
+      true,
+    );
+    expect(boxInside([0.7, 0.4, 0.1, 0.06], [0.1, 0.1, 0.2, 0.2])).toBe(false);
+  });
+});
