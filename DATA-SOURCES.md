@@ -19,7 +19,7 @@ meets that clause. Quotes are copied from the source on 2026-11-01.
   Only when every Overpass instance fails does it read the small area being surveyed (at most
   400 m across) with one `map` call to the live API, the read an editor such as iD makes before
   editing. The result is stored and shared, so the call is not repeated for a day. Curbside is an
-  editing tool, and it writes with the editing API only on the development sandbox.
+  editing tool. It writes with the editing API only on the development sandbox.
 
 ## OpenStreetMap development sandbox (writes)
 
