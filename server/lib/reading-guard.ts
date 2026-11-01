@@ -53,6 +53,11 @@ export async function assertReadingBacksEdit(
       statusCode: 409,
     });
 
+  if (reading.verdict === "uncertain")
+    fail(
+      `"${reading.text}" is close to the mapped "${reading.matchName}" (${reading.matchTarget}) and may be a misreading of it. Zoom in on the sign, read it again and record it again before proposing anything from it.`,
+      { errorCode: "reading_uncertain", statusCode: 409 },
+    );
   if (edit.kind === "create") {
     if (reading.verdict !== "not_on_map")
       fail(

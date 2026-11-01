@@ -45,7 +45,16 @@ export interface Reading {
   x?: number | undefined;
 }
 
-export type Verdict = "same" | "word_order" | "differs" | "not_on_map";
+export type Verdict =
+  | "same"
+  | "word_order"
+  | "differs"
+  | "uncertain"
+  | "not_on_map";
+
+/** Below MATCH_MIN a reading is not that place; between UNCERTAIN_MIN and MATCH_MIN it may be a misreading of it. */
+export const MATCH_MIN = 0.55;
+export const UNCERTAIN_MIN = 0.4;
 
 /** Lowercase, no accents or punctuation, word order kept. Signs are often in capitals. */
 function plain(s: string): string {
@@ -88,8 +97,14 @@ export function matchReading(
     const score = sim + xBonus;
     if (!best || score > best.score) best = { f, score, sim };
   }
-  if (!best || best.sim < 0.55)
+  if (!best || best.sim < UNCERTAIN_MIN)
     return { verdict: "not_on_map", similarity: best?.sim ?? 0, feature: null };
+  if (best.sim < MATCH_MIN)
+    return {
+      verdict: "uncertain",
+      similarity: Math.round(best.sim * 100) / 100,
+      feature: best.f,
+    };
   const mapNames = [best.f.tags.name, best.f.tags.brand].filter(
     (n): n is string => Boolean(n),
   );

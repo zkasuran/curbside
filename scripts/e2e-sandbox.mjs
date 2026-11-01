@@ -461,6 +461,34 @@ check(
 );
 
 // 9. Interrupted upload: the write lands, then the process dies before it records the outcome.
+await act("inspect-photo", { photoId: photo.id, zoom: [0.28, 0.4, 0.2, 0.15] });
+const savana = await act("record-signs", {
+  photoId: photo.id,
+  readings: [
+    {
+      text: "SAVANA",
+      kind: "bar",
+      box: [0.33, 0.48, 0.09, 0.06],
+      legibility: "clear",
+    },
+  ],
+});
+const savanaReading = savana.body.readings?.[0];
+const savanaCreate = await act("propose-edit", {
+  photoId: photo.id,
+  kind: "create",
+  set: { amenity: "bar", name: "SAVANA" },
+  evidence: "x x",
+  rationale: "x x",
+  confidence: 0.8,
+  readingId: savanaReading?.readingId,
+});
+check(
+  "a reading close to a mapped name (SAVANA by Sakura) is uncertain and cannot become a new place",
+  savanaReading?.verdict === "uncertain" &&
+    /misreading/u.test(savanaCreate.error),
+  savanaCreate.error,
+);
 await act("inspect-photo", {
   photoId: photo.id,
   zoom: [0.15, 0.45, 0.2, 0.15],

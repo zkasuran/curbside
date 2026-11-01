@@ -234,3 +234,24 @@ describe("boxInside", () => {
     expect(boxInside([0.7, 0.4, 0.1, 0.06], [0.1, 0.1, 0.2, 0.2])).toBe(false);
   });
 });
+
+describe("uncertain readings", () => {
+  it("SAVANA read where Sakura is mapped is uncertain, not a new place", () => {
+    const features = featuresInView(camera, [
+      {
+        type: "node",
+        id: "2914625161",
+        version: 3,
+        lat: 48.85463,
+        lon: 2.37285,
+        tags: { amenity: "restaurant", name: "Sakura" },
+      },
+    ]);
+    const m = matchReading({ text: "SAVANA" }, features);
+    expect(m.verdict).toBe("uncertain");
+    expect(m.feature?.id).toBe("2914625161");
+    expect(matchReading({ text: "UNIQUE" }, features).verdict).toBe(
+      "not_on_map",
+    );
+  });
+});

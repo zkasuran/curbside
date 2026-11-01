@@ -21,7 +21,7 @@ const detailValue = z.string().max(200);
 
 export default defineAction({
   description:
-    "Record what you read on the signs in a photo, exactly as written, BEFORE comparing with the map. Only after this call do you learn the map's names: the result matches each reading to the live map feature it belongs to (verdict same, word_order, differs or not_on_map) with that feature's full tags. Use it to decide what to propose.",
+    "Record what you read on the signs in a photo, exactly as written, BEFORE comparing with the map. Only after this call do you learn the map's names: the result matches each reading to the live map feature it belongs to (verdict same, word_order, differs, uncertain or not_on_map) with that feature's full tags. Use it to decide what to propose.",
   schema: z.object({
     photoId: z.string().uuid().describe("The photo you read"),
     readings: z
@@ -174,7 +174,7 @@ export default defineAction({
             distanceM: f.distanceM,
           })),
         guidance:
-          "A new place needs a reading made up close: zoom on its box with inspect-photo, read it again, record it again. same: confirm with check_date set to the photo date only if useful. word_order or differs: propose a modify of name on mapFeature.target, quoting the reading. not_on_map with clear legibility: propose a create. A feature in notRead is not proof of closure; it may be hidden or out of frame.",
+          "uncertain: the reading resembles a mapped name and may be a misreading; zoom and re-read before proposing. A new place needs a reading made up close: zoom on its box with inspect-photo, read it again, record it again. same: confirm with check_date set to the photo date only if useful. word_order or differs: propose a modify of name on mapFeature.target, quoting the reading. not_on_map with clear legibility: propose a create. A feature in notRead is not proof of closure; it may be hidden or out of frame.",
       };
     } catch (error) {
       rethrow(error);
