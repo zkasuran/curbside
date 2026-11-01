@@ -12,14 +12,19 @@ export interface LatLon {
 
 export function isLatLon(p: LatLon): boolean {
   return (
-    Number.isFinite(p.lat) && Number.isFinite(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180
+    Number.isFinite(p.lat) &&
+    Number.isFinite(p.lon) &&
+    Math.abs(p.lat) <= 90 &&
+    Math.abs(p.lon) <= 180
   );
 }
 
 export function distanceM(a: LatLon, b: LatLon): number {
   const dLat = rad(b.lat - a.lat);
   const dLon = rad(b.lon - a.lon);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
@@ -59,22 +64,40 @@ export function inViewCone(
 }
 
 /** The point `distance` metres from `start` along `bearing`. */
-export function project(start: LatLon, bearing: number, distance: number): LatLon {
+export function project(
+  start: LatLon,
+  bearing: number,
+  distance: number,
+): LatLon {
   const d = distance / R;
   const b = rad(bearing);
   const lat1 = rad(start.lat);
   const lon1 = rad(start.lon);
-  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(b));
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(b),
+  );
   const lon2 =
-    lon1 + Math.atan2(Math.sin(b) * Math.sin(d) * Math.cos(lat1), Math.cos(d) - Math.sin(lat1) * Math.sin(lat2));
+    lon1 +
+    Math.atan2(
+      Math.sin(b) * Math.sin(d) * Math.cos(lat1),
+      Math.cos(d) - Math.sin(lat1) * Math.sin(lat2),
+    );
   return { lat: deg(lat2), lon: ((deg(lon2) + 540) % 360) - 180 };
 }
 
 /** A bounding box string "minLon,minLat,maxLon,maxLat" around a point. */
-export function bboxAround(center: LatLon, radiusM: number): [number, number, number, number] {
+export function bboxAround(
+  center: LatLon,
+  radiusM: number,
+): [number, number, number, number] {
   const dLat = deg(radiusM / R);
   const dLon = deg(radiusM / (R * Math.cos(rad(center.lat))));
-  return [center.lon - dLon, center.lat - dLat, center.lon + dLon, center.lat + dLat];
+  return [
+    center.lon - dLon,
+    center.lat - dLat,
+    center.lon + dLon,
+    center.lat + dLat,
+  ];
 }
 
 /** Round to 7 decimals, OSM's storage precision (about 1 cm). */

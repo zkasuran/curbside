@@ -8,7 +8,8 @@ import { caller, ownedBy, parseJson } from "../server/lib/common.js";
 import { changesetUrl } from "../server/lib/osm-client.js";
 
 export default defineAction({
-  description: "List the user's uploads to the OSM sandbox, newest first, with per-edit outcomes.",
+  description:
+    "List the user's uploads to the OSM sandbox, newest first, with per-edit outcomes.",
   schema: z.object({}),
   http: { method: "GET" },
   readOnly: true,

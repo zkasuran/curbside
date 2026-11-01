@@ -8,7 +8,8 @@ import { caller, ownedBy, photoDto } from "../server/lib/common.js";
 import { LIMITS } from "../server/lib/limits.js";
 
 export default defineAction({
-  description: "List the street photos in the user's survey, newest import first.",
+  description:
+    "List the street photos in the user's survey, newest import first.",
   schema: z.object({}),
   http: { method: "GET" },
   readOnly: true,

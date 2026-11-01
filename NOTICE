@@ -1,0 +1,37 @@
+Curbside
+Copyright (c) 2026 zkasuran
+
+This repository contains two kinds of code under two licences. Read this first.
+
+1. The Agent-Native Chat template (MIT). The app was scaffolded on 2026-10-31 with
+   `npx @agent-native/core@0.222.2 create curbside --standalone --template chat`
+   (commit 8080462 in this repository's history). Files that came from that template, including
+   any part of them kept in later edits, stay under the template's licence:
+
+     MIT License, Copyright (c) 2026 Builder.io, Inc.
+     https://github.com/BuilderIO/agent-native/blob/main/LICENSE
+
+   Template files modified here: AGENTS.md, actions/navigate.ts, actions/view-screen.ts,
+   app/components/layout/AgentInspector.tsx, app/components/layout/Sidebar.tsx,
+   app/hooks/use-navigation-state.ts, app/i18n/en-US.ts, app/global.css,
+   server/plugins/agent-chat.ts, server/plugins/agent-native-email-branding.ts,
+   vite.config.ts, package.json, pnpm-workspace.yaml, .gitignore. The template example
+   action actions/hello.ts was removed.
+
+2. Everything Curbside added (SAND-1.0). Files carrying the header
+   `SPDX-License-Identifier: LicenseRef-zkasuran-SAND-1.0`, together with Curbside's additions to the
+   template files above, are under the Source-Available No-Derivatives Licence 1.0 in LICENSE.
+
+Third-party packages are used under their own licences, recorded in pnpm-lock.yaml. Notable
+direct additions: leaflet 1.9.4 (BSD-2-Clause, Copyright (c) 2010-2023 Volodymyr Agafonkin,
+(c) 2010-2011 CloudMade), sharp 0.35.5 (Apache-2.0, Lovell Fuller; bundles libvips under
+LGPL-3.0-or-later as a dynamically linked library).
+
+Data and services (details and quoted terms in DATA-SOURCES.md):
+- Map data (c) OpenStreetMap contributors, available under the Open Database License (ODbL 1.0).
+- Map tiles from tile.openstreetmap.org under the OSMF Tile Usage Policy.
+- Street-level photos from Panoramax, each under the licence stated with it (mostly
+  Licence Ouverte / Etalab 2.0), credited by producer and date wherever shown.
+- Live map reads through public Overpass API instances.
+- Writes only to the OpenStreetMap development sandbox (master.apis.dev.openstreetmap.org).
+- The in-app agent runs on Google Gemini through the Agent-Native framework.

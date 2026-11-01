@@ -1,4 +1,4 @@
-# Curbside — Agent Guide
+# Curbside: Agent Guide
 
 Chat is the minimal chat-first agent-native app. `/` redirects to shared sign-in, then `/home`, the editable Get started page. Chat lives at `/chat`; new chats start there. Actions carry capabilities; screens exist only for durable workflows.
 

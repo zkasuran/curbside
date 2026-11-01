@@ -7,8 +7,15 @@ import { getDb, schema } from "../server/db/index.js";
 import { caller, ownedBy, parseJson } from "../server/lib/common.js";
 
 export default defineAction({
-  description: "List the signs the agent read on the street, with how each matched the map. Optionally for one photo.",
-  schema: z.object({ photoId: z.string().uuid().optional().describe("Only readings from this photo") }),
+  description:
+    "List the signs the agent read on the street, with how each matched the map. Optionally for one photo.",
+  schema: z.object({
+    photoId: z
+      .string()
+      .uuid()
+      .optional()
+      .describe("Only readings from this photo"),
+  }),
   http: { method: "GET" },
   readOnly: true,
   agentTool: false,

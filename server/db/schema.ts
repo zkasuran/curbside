@@ -22,7 +22,9 @@ export const photos = pgTable("photos", {
   hdUrl: text("hd_url"),
   pageUrl: text("page_url").notNull(),
   inspectedAt: text("inspected_at"),
-  createdAt: text("created_at").notNull().default(sql`now()`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`now()`),
 });
 
 export const PROPOSAL_STATUSES = [
@@ -60,7 +62,9 @@ export const proposals = pgTable("proposals", {
   readingId: text("reading_id"),
   rationale: text("rationale").notNull(),
   confidence: real("confidence").notNull(),
-  status: text("status", { enum: PROPOSAL_STATUSES }).notNull().default("pending"),
+  status: text("status", { enum: PROPOSAL_STATUSES })
+    .notNull()
+    .default("pending"),
   reviewNote: text("review_note"),
   reviewedAt: text("reviewed_at"),
   editedByReviewer: integer("edited_by_reviewer").notNull().default(0),
@@ -71,8 +75,12 @@ export const proposals = pgTable("proposals", {
   changesetId: text("changeset_id"),
   claimedAt: text("claimed_at"),
   error: text("error"),
-  createdAt: text("created_at").notNull().default(sql`now()`),
-  updatedAt: text("updated_at").notNull().default(sql`now()`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`now()`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`now()`),
 });
 
 /**
@@ -88,7 +96,9 @@ export const sandboxMirrors = pgTable("sandbox_mirrors", {
   sandboxType: text("sandbox_type").notNull(),
   sandboxId: text("sandbox_id").notNull(),
   changesetId: text("changeset_id").notNull(),
-  createdAt: text("created_at").notNull().default(sql`now()`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`now()`),
 });
 
 /**
@@ -123,7 +133,9 @@ export const signReadings = pgTable("sign_readings", {
   matchTarget: text("match_target"),
   matchName: text("match_name"),
   similarity: real("similarity"),
-  createdAt: text("created_at").notNull().default(sql`now()`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`now()`),
 });
 
 /** One upload to the sandbox and what verification found afterwards. */
@@ -133,8 +145,12 @@ export const changesets = pgTable("changesets", {
   orgId: text("org_id"),
   osmChangesetId: text("osm_changeset_id"),
   comment: text("comment").notNull(),
-  status: text("status", { enum: ["open", "uploaded", "partial", "failed", "nothing"] }).notNull(),
+  status: text("status", {
+    enum: ["open", "uploaded", "partial", "failed", "nothing"],
+  }).notNull(),
   /** JSON report: per-proposal outcome, verification, conflicts. */
   report: text("report").notNull(),
-  createdAt: text("created_at").notNull().default(sql`now()`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`now()`),
 });

@@ -44,11 +44,17 @@ export interface ElementModify {
   members?: { type: OsmType; ref: string; role: string }[] | undefined;
 }
 
-export function osmChangeXml(changesetId: string, creates: NodeCreate[], modifies: ElementModify[]): string {
-  if (!/^\d+$/u.test(changesetId)) throw new Error("Changeset id must be numeric.");
+export function osmChangeXml(
+  changesetId: string,
+  creates: NodeCreate[],
+  modifies: ElementModify[],
+): string {
+  if (!/^\d+$/u.test(changesetId))
+    throw new Error("Changeset id must be numeric.");
   const create = creates
     .map((n) => {
-      if (n.placeholderId >= 0) throw new Error("Placeholder ids must be negative.");
+      if (n.placeholderId >= 0)
+        throw new Error("Placeholder ids must be negative.");
       return `<node id="${n.placeholderId}" changeset="${changesetId}" lat="${n.lat}" lon="${n.lon}">${tagXml(n.tags)}</node>`;
     })
     .join("");
@@ -57,15 +63,21 @@ export function osmChangeXml(changesetId: string, creates: NodeCreate[], modifie
       if (!/^\d+$/u.test(m.id)) throw new Error("Element ids must be numeric.");
       const head = `id="${m.id}" version="${m.version}" changeset="${changesetId}"`;
       if (m.type === "node") {
-        if (m.lat === undefined || m.lon === undefined) throw new Error("A node modify needs its position.");
+        if (m.lat === undefined || m.lon === undefined)
+          throw new Error("A node modify needs its position.");
         return `<node ${head} lat="${m.lat}" lon="${m.lon}">${tagXml(m.tags)}</node>`;
       }
       if (m.type === "way") {
-        const nds = (m.nodeRefs ?? []).map((r) => `<nd ref="${escapeXml(r)}"/>`).join("");
+        const nds = (m.nodeRefs ?? [])
+          .map((r) => `<nd ref="${escapeXml(r)}"/>`)
+          .join("");
         return `<way ${head}>${nds}${tagXml(m.tags)}</way>`;
       }
       const mem = (m.members ?? [])
-        .map((x) => `<member type="${x.type}" ref="${escapeXml(x.ref)}" role="${escapeXml(x.role)}"/>`)
+        .map(
+          (x) =>
+            `<member type="${x.type}" ref="${escapeXml(x.ref)}" role="${escapeXml(x.role)}"/>`,
+        )
         .join("");
       return `<relation ${head}>${mem}${tagXml(m.tags)}</relation>`;
     })
@@ -87,7 +99,8 @@ export interface DiffEntry {
 
 function attrs(fragment: string): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const m of fragment.matchAll(/([a-z_]+)="([^"]*)"/gu)) if (m[1] && m[2] !== undefined) out[m[1]] = m[2];
+  for (const m of fragment.matchAll(/([a-z_]+)="([^"]*)"/gu))
+    if (m[1] && m[2] !== undefined) out[m[1]] = m[2];
   return out;
 }
 
@@ -101,7 +114,10 @@ export function parseDiffResult(xml: string): DiffEntry[] {
       type: m[1] as OsmType,
       oldId: a.old_id,
       newId: a.new_id && /^\d+$/u.test(a.new_id) ? a.new_id : null,
-      newVersion: a.new_version && /^\d+$/u.test(a.new_version) ? Number(a.new_version) : null,
+      newVersion:
+        a.new_version && /^\d+$/u.test(a.new_version)
+          ? Number(a.new_version)
+          : null,
     });
   }
   return entries;
@@ -121,15 +137,26 @@ export interface OsmElement {
 }
 
 export function parseElementJson(json: unknown): OsmElement {
-  const el = (json as { elements?: unknown[] })?.elements?.[0] as Record<string, unknown> | undefined;
-  if (!el || typeof el !== "object") throw new Error("No element in the response.");
+  const el = (json as { elements?: unknown[] })?.elements?.[0] as
+    | Record<string, unknown>
+    | undefined;
+  if (!el || typeof el !== "object")
+    throw new Error("No element in the response.");
   const type = el.type;
-  if (type !== "node" && type !== "way" && type !== "relation") throw new Error("Unknown element type.");
+  if (type !== "node" && type !== "way" && type !== "relation")
+    throw new Error("Unknown element type.");
   const tags: Tags = {};
   if (el.tags && typeof el.tags === "object") {
-    for (const [k, v] of Object.entries(el.tags as Record<string, unknown>)) if (typeof v === "string") tags[k] = v;
+    for (const [k, v] of Object.entries(el.tags as Record<string, unknown>))
+      if (typeof v === "string") tags[k] = v;
   }
-  const out: OsmElement = { type, id: String(el.id), version: Number(el.version), tags, visible: el.visible !== false };
+  const out: OsmElement = {
+    type,
+    id: String(el.id),
+    version: Number(el.version),
+    tags,
+    visible: el.visible !== false,
+  };
   if (typeof el.lat === "number") out.lat = el.lat;
   if (typeof el.lon === "number") out.lon = el.lon;
   if (Array.isArray(el.nodes)) out.nodes = el.nodes.map(String);

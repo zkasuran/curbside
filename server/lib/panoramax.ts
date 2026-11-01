@@ -8,20 +8,35 @@ import { LIMITS } from "./limits.js";
 const API = "https://api.panoramax.xyz/api";
 
 /** Hosts Panoramax serves pictures from. We fetch images only from these. */
-const IMAGE_HOST_SUFFIXES = [".panoramax.xyz", "panoramax.xyz", ".panoramax.ign.fr", "panoramax.ign.fr", ".ovh.net", ".panoramax.openstreetmap.fr", "panoramax.openstreetmap.fr"];
+const IMAGE_HOST_SUFFIXES = [
+  ".panoramax.xyz",
+  "panoramax.xyz",
+  ".panoramax.ign.fr",
+  "panoramax.ign.fr",
+  ".ovh.net",
+  ".panoramax.openstreetmap.fr",
+  "panoramax.openstreetmap.fr",
+];
 
 export function isPanoramaxImageUrl(url: string): boolean {
   try {
     const u = new URL(url);
     if (u.protocol !== "https:") return false;
-    return IMAGE_HOST_SUFFIXES.some((s) => (s.startsWith(".") ? u.hostname.endsWith(s) : u.hostname === s));
+    return IMAGE_HOST_SUFFIXES.some((s) =>
+      s.startsWith(".") ? u.hostname.endsWith(s) : u.hostname === s,
+    );
   } catch {
     return false;
   }
 }
 
 /** Licences whose terms we have read and which allow deriving OSM edits with attribution. */
-const ACCEPTED_LICENCES = new Set(["etalab-2.0", "CC-BY-SA-4.0", "CC-BY-4.0", "CC0-1.0"]);
+const ACCEPTED_LICENCES = new Set([
+  "etalab-2.0",
+  "CC-BY-SA-4.0",
+  "CC-BY-4.0",
+  "CC0-1.0",
+]);
 
 export interface StreetPhoto {
   sourceId: string;
@@ -51,15 +66,21 @@ export function parsePanoramax(json: unknown): StreetPhoto[] {
   const out: StreetPhoto[] = [];
   for (const f of features as Feature[]) {
     if (!f || typeof f !== "object") continue;
-    const id = typeof f.id === "string" && /^[0-9a-f-]{36}$/u.test(f.id) ? f.id : null;
-    const coords = Array.isArray(f.geometry?.coordinates) ? (f.geometry?.coordinates as unknown[]) : [];
+    const id =
+      typeof f.id === "string" && /^[0-9a-f-]{36}$/u.test(f.id) ? f.id : null;
+    const coords = Array.isArray(f.geometry?.coordinates)
+      ? (f.geometry?.coordinates as unknown[])
+      : [];
     const [lon, lat] = coords as number[];
-    const p = f.properties && typeof f.properties === "object" ? f.properties : {};
+    const p =
+      f.properties && typeof f.properties === "object" ? f.properties : {};
     const sd = f.assets?.sd?.href;
     const thumb = f.assets?.thumb?.href;
     const hd = f.assets?.hd?.href;
     const license = typeof p.license === "string" ? p.license : "";
-    const io = ((p["pers:interior_orientation"] as object | null) ?? {}) as { field_of_view?: unknown };
+    const io = ((p["pers:interior_orientation"] as object | null) ?? {}) as {
+      field_of_view?: unknown;
+    };
     const az = p["view:azimuth"];
     if (!id || typeof lat !== "number" || typeof lon !== "number") continue;
     if (typeof sd !== "string" || !isPanoramaxImageUrl(sd)) continue;
@@ -68,13 +89,23 @@ export function parsePanoramax(json: unknown): StreetPhoto[] {
       sourceId: id,
       lat,
       lon,
-      azimuth: typeof az === "number" && Number.isFinite(az) ? ((az % 360) + 360) % 360 : null,
+      azimuth:
+        typeof az === "number" && Number.isFinite(az)
+          ? ((az % 360) + 360) % 360
+          : null,
       fov: typeof io.field_of_view === "number" ? io.field_of_view : null,
-      capturedAt: typeof p.datetime === "string" ? new Date(p.datetime).toISOString() : "",
+      capturedAt:
+        typeof p.datetime === "string"
+          ? new Date(p.datetime).toISOString()
+          : "",
       license,
-      producer: typeof p["geovisio:producer"] === "string" ? (p["geovisio:producer"] as string).slice(0, 80) : "unknown",
+      producer:
+        typeof p["geovisio:producer"] === "string"
+          ? (p["geovisio:producer"] as string).slice(0, 80)
+          : "unknown",
       imageUrl: sd,
-      thumbUrl: typeof thumb === "string" && isPanoramaxImageUrl(thumb) ? thumb : sd,
+      thumbUrl:
+        typeof thumb === "string" && isPanoramaxImageUrl(thumb) ? thumb : sd,
       hdUrl: typeof hd === "string" && isPanoramaxImageUrl(hd) ? hd : null,
       pageUrl: `https://api.panoramax.xyz/#focus=pic&pic=${id}`,
     });
@@ -93,27 +124,40 @@ export async function searchPhotos(
     limit: String(Math.min(100, Math.max(1, limit * 3))),
     datetime: `${since.toISOString()}/..`,
   });
-  const photos = parsePanoramax(await fetchJson<unknown>(`${API}/search?${params}`));
-  photos.sort((a, b) => Number(a.fov === null || a.fov >= 300) - Number(b.fov === null || b.fov >= 300));
+  const photos = parsePanoramax(
+    await fetchJson<unknown>(`${API}/search?${params}`),
+  );
+  photos.sort(
+    (a, b) =>
+      Number(a.fov === null || a.fov >= 300) -
+      Number(b.fov === null || b.fov >= 300),
+  );
   return photos;
 }
 
 export async function photoById(sourceId: string): Promise<StreetPhoto | null> {
   if (!/^[0-9a-f-]{36}$/u.test(sourceId)) return null;
-  const photos = parsePanoramax(await fetchJson<unknown>(`${API}/search?ids=${sourceId}`));
+  const photos = parsePanoramax(
+    await fetchJson<unknown>(`${API}/search?ids=${sourceId}`),
+  );
   return photos[0] ?? null;
 }
 
 const JPEG = [0xff, 0xd8, 0xff];
 
 /** Download one picture for the agent to look at. Refuses anything that is not a JPEG. */
-export async function downloadImage(url: string, maxBytes: number = LIMITS.imageMaxBytes): Promise<Uint8Array> {
-  if (!isPanoramaxImageUrl(url)) throw new Error("Not a Panoramax picture URL.");
+export async function downloadImage(
+  url: string,
+  maxBytes: number = LIMITS.imageMaxBytes,
+): Promise<Uint8Array> {
+  if (!isPanoramaxImageUrl(url))
+    throw new Error("Not a Panoramax picture URL.");
   const { bytes } = await fetchBytes(url, {
     maxBytes,
     timeoutMs: LIMITS.fetchTimeoutMs * 2,
     allowRedirectTo: (u) => isPanoramaxImageUrl(u.toString()),
   });
-  if (!JPEG.every((b, i) => bytes[i] === b)) throw new Error("The picture is not a JPEG.");
+  if (!JPEG.every((b, i) => bytes[i] === b))
+    throw new Error("The picture is not a JPEG.");
   return bytes;
 }

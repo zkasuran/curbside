@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: LicenseRef-zkasuran-SAND-1.0
 import { sendToAgentChat } from "@agent-native/core/client/agent-chat";
-import { actionErrorMessage, useActionMutation, useActionQuery } from "@agent-native/core/client/hooks";
+import {
+  actionErrorMessage,
+  useActionMutation,
+  useActionQuery,
+} from "@agent-native/core/client/hooks";
+import {
+  useSetHeaderActions,
+  useSetPageTitle,
+} from "@agent-native/toolkit/app-shell/header-actions";
 import {
   IconCamera,
   IconCloudUpload,
@@ -10,18 +18,37 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSetHeaderActions, useSetPageTitle } from "@agent-native/toolkit/app-shell/header-actions";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Kbd } from "@/components/ui/kbd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-import { DEMO_STREET, FILTERS, type FilterId, type Photo, type Proposal } from "./model";
+import {
+  DEMO_STREET,
+  FILTERS,
+  type FilterId,
+  type Photo,
+  type Proposal,
+} from "./model";
 import { PhotoViewer } from "./PhotoViewer";
 import { ProposalCard } from "./ProposalCard";
 
@@ -31,13 +58,23 @@ type UploadReport = {
   changesetId: string | null;
   changesetUrl: string | null;
   message: string;
-  outcomes: { proposalId: string; title: string; outcome: string; detail: string; sandboxUrl: string | null }[];
+  outcomes: {
+    proposalId: string;
+    title: string;
+    outcome: string;
+    detail: string;
+    sandboxUrl: string | null;
+  }[];
 };
 
 function parseCenter(at: string | null) {
   const m = at?.match(/^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(?:,(\d{1,2}))?$/u);
   if (!m) return { lat: DEMO_STREET.lat, lon: DEMO_STREET.lon, zoom: 18 };
-  return { lat: Number(m[1]), lon: Number(m[2]), zoom: m[3] ? Number(m[3]) : 18 };
+  return {
+    lat: Number(m[1]),
+    lon: Number(m[2]),
+    zoom: m[3] ? Number(m[3]) : 18,
+  };
 }
 
 export function SurveyPage() {
@@ -51,7 +88,8 @@ export function SurveyPage() {
 
   const photoId = params.get("photo");
   const proposalId = params.get("proposal");
-  const filter = (FILTERS.find((f) => f.id === params.get("filter"))?.id ?? "pending") as FilterId;
+  const filter = (FILTERS.find((f) => f.id === params.get("filter"))?.id ??
+    "pending") as FilterId;
 
   const photosQ = useActionQuery("list-photos", {});
   const proposalsQ = useActionQuery("list-proposals", {});
@@ -60,12 +98,20 @@ export function SurveyPage() {
   const proposals = (proposalsQ.data?.proposals ?? []) as Proposal[];
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
-    for (const f of FILTERS) c[f.id] = proposals.filter((p) => (f.statuses as readonly string[]).includes(p.status)).length;
+    for (const f of FILTERS)
+      c[f.id] = proposals.filter((p) =>
+        (f.statuses as readonly string[]).includes(p.status),
+      ).length;
     return c;
   }, [proposals]);
   const visible = useMemo(() => {
-    const statuses = FILTERS.find((f) => f.id === filter)?.statuses as readonly string[];
-    return proposals.filter((p) => statuses.includes(p.status) && (!photoId || p.photoId === photoId || p.id === proposalId));
+    const statuses = FILTERS.find((f) => f.id === filter)
+      ?.statuses as readonly string[];
+    return proposals.filter(
+      (p) =>
+        statuses.includes(p.status) &&
+        (!photoId || p.photoId === photoId || p.id === proposalId),
+    );
   }, [proposals, filter, photoId, proposalId]);
   const photo = photos.find((p) => p.id === photoId) ?? null;
 
@@ -74,7 +120,8 @@ export function SurveyPage() {
       setParams(
         (prev) => {
           const next = new URLSearchParams(prev);
-          for (const [k, v] of Object.entries(patch)) (v === null ? next.delete(k) : next.set(k, v));
+          for (const [k, v] of Object.entries(patch))
+            v === null ? next.delete(k) : next.set(k, v);
           return next;
         },
         { replace: true },
@@ -85,54 +132,101 @@ export function SurveyPage() {
 
   const listKey = ["action", "list-proposals", {}];
   const setStatus = (ids: string[], status: Proposal["status"]) =>
-    queryClient.setQueryData(listKey, (old: { proposals: Proposal[]; counts: unknown } | undefined) =>
-      old ? { ...old, proposals: old.proposals.map((p) => (ids.includes(p.id) ? { ...p, status } : p)) } : old,
+    queryClient.setQueryData(
+      listKey,
+      (old: { proposals: Proposal[]; counts: unknown } | undefined) =>
+        old
+          ? {
+              ...old,
+              proposals: old.proposals.map((p) =>
+                ids.includes(p.id) ? { ...p, status } : p,
+              ),
+            }
+          : old,
     );
 
   const review = useActionMutation("review-proposal", {
     onMutate: async (input: { ids: string[]; decision: string }) => {
       await queryClient.cancelQueries({ queryKey: listKey });
       const previous = queryClient.getQueryData(listKey);
-      setStatus(input.ids, input.decision === "approve" ? "approved" : input.decision === "reject" ? "rejected" : "pending");
+      setStatus(
+        input.ids,
+        input.decision === "approve"
+          ? "approved"
+          : input.decision === "reject"
+            ? "rejected"
+            : "pending",
+      );
       return { previous };
     },
     onError: (error, _input, context) => {
-      queryClient.setQueryData(listKey, (context as { previous?: unknown } | undefined)?.previous);
+      queryClient.setQueryData(
+        listKey,
+        (context as { previous?: unknown } | undefined)?.previous,
+      );
       toast.error(actionErrorMessage(error) ?? "Could not save the review.");
     },
   });
   const edit = useActionMutation("update-proposal", {
-    onSuccess: () => toast.success("Saved. It is back in the queue for your approval."),
-    onError: (error) => toast.error(actionErrorMessage(error) ?? "Could not save the edit."),
+    onSuccess: () =>
+      toast.success("Saved. It is back in the queue for your approval."),
+    onError: (error) =>
+      toast.error(actionErrorMessage(error) ?? "Could not save the edit."),
   });
   const upload = useActionMutation("upload-approved", {
     onSuccess: (data) => {
       setReport(data as UploadReport);
-      void queryClient.invalidateQueries({ queryKey: ["action", "list-changesets"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["action", "list-changesets"],
+      });
     },
-    onError: (error) => toast.error(actionErrorMessage(error) ?? "Upload failed. Nothing was written."),
+    onError: (error) =>
+      toast.error(
+        actionErrorMessage(error) ?? "Upload failed. Nothing was written.",
+      ),
   });
   const importPhotos = useActionMutation("import-street-photos", {
     onSuccess: (data) => toast.success((data as { message: string }).message),
-    onError: (error) => toast.error(actionErrorMessage(error) ?? "Could not load street photos."),
+    onError: (error) =>
+      toast.error(actionErrorMessage(error) ?? "Could not load street photos."),
   });
 
-  const decide = (id: string, decision: "approve" | "reject" | "reopen") => review.mutate({ ids: [id], decision });
+  const decide = (id: string, decision: "approve" | "reject" | "reopen") =>
+    review.mutate({ ids: [id], decision });
 
   // Keyboard review: j/k move, a approve, r reject.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
-      if (e.metaKey || e.ctrlKey || e.altKey || (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/u.test(t.tagName)))) return;
-      if (t?.closest("[data-agent-sidebar], .agentkit-chat, [role=dialog]")) return;
+      if (
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        (t &&
+          (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/u.test(t.tagName)))
+      )
+        return;
+      if (t?.closest("[data-agent-sidebar], .agentkit-chat, [role=dialog]"))
+        return;
       const i = visible.findIndex((p) => p.id === proposalId);
       if (e.key === "j" || e.key === "k") {
-        const next = visible[Math.min(visible.length - 1, Math.max(0, i + (e.key === "j" ? 1 : -1)))];
+        const next =
+          visible[
+            Math.min(
+              visible.length - 1,
+              Math.max(0, i + (e.key === "j" ? 1 : -1)),
+            )
+          ];
         if (next) {
           update({ proposal: next.id, photo: next.photoId });
-          document.querySelector(`[data-proposal-id="${next.id}"]`)?.scrollIntoView({ block: "nearest" });
+          document
+            .querySelector(`[data-proposal-id="${next.id}"]`)
+            ?.scrollIntoView({ block: "nearest" });
         }
-      } else if ((e.key === "a" || e.key === "r") && visible[i]?.status === "pending") {
+      } else if (
+        (e.key === "a" || e.key === "r") &&
+        visible[i]?.status === "pending"
+      ) {
         decide(visible[i]!.id, e.key === "a" ? "approve" : "reject");
         const next = visible[i + 1] ?? visible[i - 1];
         if (next) update({ proposal: next.id, photo: next.photoId });
@@ -142,7 +236,8 @@ export function SurveyPage() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const askAgent = (message: string, context: string) => sendToAgentChat({ message, context, submit: true, openSidebar: true });
+  const askAgent = (message: string, context: string) =>
+    sendToAgentChat({ message, context, submit: true, openSidebar: true });
   const surveyArea = () =>
     askAgent(
       photos.length
@@ -163,7 +258,8 @@ export function SurveyPage() {
           title="Every upload goes to the OpenStreetMap development server. Live OSM is never written."
         >
           <IconShieldCheck className="size-3.5 shrink-0" />
-          Sandbox only{statusQ.data?.account ? ` · ${statusQ.data.account}` : ""}
+          Sandbox only
+          {statusQ.data?.account ? ` · ${statusQ.data.account}` : ""}
         </span>
       </span>
     ),
@@ -179,14 +275,29 @@ export function SurveyPage() {
           size="sm"
           variant="ghost"
           disabled={busyImport}
-          onClick={() => importPhotos.mutate({ lat: center.current.lat, lon: center.current.lon, radiusM: 80, limit: 12 })}
+          onClick={() =>
+            importPhotos.mutate({
+              lat: center.current.lat,
+              lon: center.current.lon,
+              radiusM: 80,
+              limit: 12,
+            })
+          }
         >
-          <IconCamera className="size-4" /> <span className="hidden md:inline">{busyImport ? "Finding photos…" : "Photos here"}</span>
+          <IconCamera className="size-4" />{" "}
+          <span className="hidden md:inline">
+            {busyImport ? "Finding photos…" : "Photos here"}
+          </span>
         </Button>
         <Button size="sm" variant="outline" onClick={surveyArea}>
-          <IconSparkles className="size-4" /> <span className="hidden md:inline">Survey with agent</span>
+          <IconSparkles className="size-4" />{" "}
+          <span className="hidden md:inline">Survey with agent</span>
         </Button>
-        <Button size="sm" disabled={approvedCount === 0 || busyUpload} onClick={() => upload.mutate({})}>
+        <Button
+          size="sm"
+          disabled={approvedCount === 0 || busyUpload}
+          onClick={() => upload.mutate({})}
+        >
           <IconCloudUpload className="size-4" />
           {busyUpload ? "Uploading…" : `Upload ${approvedCount}`}
         </Button>
@@ -202,7 +313,9 @@ export function SurveyPage() {
       <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(16rem,42%)_minmax(0,1fr)] @4xl:grid-cols-[minmax(0,1fr)_26rem] @4xl:grid-rows-1">
         <div className="relative min-h-0 border-b border-border @4xl:border-b-0 @4xl:border-r">
           {mounted ? (
-            <Suspense fallback={<Skeleton className="absolute inset-0 rounded-none" />}>
+            <Suspense
+              fallback={<Skeleton className="absolute inset-0 rounded-none" />}
+            >
               <SurveyMap
                 photos={photos}
                 proposals={proposals}
@@ -212,8 +325,16 @@ export function SurveyPage() {
                 onSelectPhoto={(id) => update({ photo: id, proposal: null })}
                 onSelectProposal={(id) => {
                   const p = proposals.find((x) => x.id === id);
-                  const f = p ? FILTERS.find((f) => (f.statuses as readonly string[]).includes(p.status))?.id : null;
-                  update({ proposal: id, photo: p?.photoId ?? null, ...(f && f !== filter ? { filter: f } : {}) });
+                  const f = p
+                    ? FILTERS.find((f) =>
+                        (f.statuses as readonly string[]).includes(p.status),
+                      )?.id
+                    : null;
+                  update({
+                    proposal: id,
+                    photo: p?.photoId ?? null,
+                    ...(f && f !== filter ? { filter: f } : {}),
+                  });
                 }}
                 onMoveEnd={(c) => {
                   center.current = c;
@@ -226,12 +347,26 @@ export function SurveyPage() {
           {!loading && photos.length === 0 ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-6 z-[500] flex justify-center px-4">
               <div className="pointer-events-auto max-w-md rounded-xl border border-border bg-background/95 p-4 text-sm shadow-lg backdrop-blur">
-                <p className="font-medium">Walk a street without leaving your desk.</p>
+                <p className="font-medium">
+                  Walk a street without leaving your desk.
+                </p>
                 <p className="mt-1 text-muted-foreground">
-                  Load open street photos, let the agent compare every shopfront with the map, then approve the fixes you agree with.
+                  Load open street photos, let the agent compare every shopfront
+                  with the map, then approve the fixes you agree with.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Button size="sm" onClick={() => importPhotos.mutate({ lat: DEMO_STREET.lat, lon: DEMO_STREET.lon, radiusM: 60, limit: 8 })} disabled={importPhotos.isPending}>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      importPhotos.mutate({
+                        lat: DEMO_STREET.lat,
+                        lon: DEMO_STREET.lon,
+                        radiusM: 60,
+                        limit: 8,
+                      })
+                    }
+                    disabled={importPhotos.isPending}
+                  >
                     <IconMapPin className="size-4" /> Load {DEMO_STREET.label}
                   </Button>
                   <Button size="sm" variant="outline" onClick={surveyArea}>
@@ -244,7 +379,10 @@ export function SurveyPage() {
         </div>
 
         <aside className="flex min-h-0 flex-col" aria-label="Review queue">
-          <div className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2" role="tablist">
+          <div
+            className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2"
+            role="tablist"
+          >
             {FILTERS.map((f) => (
               <button
                 key={f.id}
@@ -253,11 +391,15 @@ export function SurveyPage() {
                 onClick={() => update({ filter: f.id })}
                 className={cn(
                   "whitespace-nowrap rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                  f.id === filter ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  f.id === filter
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 {f.label}
-                <span className="ml-1 tabular-nums opacity-70">{counts[f.id] ?? 0}</span>
+                <span className="ml-1 tabular-nums opacity-70">
+                  {counts[f.id] ?? 0}
+                </span>
               </button>
             ))}
           </div>
@@ -278,10 +420,14 @@ export function SurveyPage() {
               />
             ) : null}
             {loading ? (
-              Array.from({ length: 3 }, (_, i) => <Skeleton key={i} className="h-48 rounded-xl" />)
+              Array.from({ length: 3 }, (_, i) => (
+                <Skeleton key={i} className="h-48 rounded-xl" />
+              ))
             ) : visible.length === 0 ? (
               <p className="px-1 py-8 text-center text-sm text-muted-foreground">
-                {proposals.length === 0 ? "No drafted edits yet. Ask the agent to survey the photos." : "Nothing here."}
+                {proposals.length === 0
+                  ? "No drafted edits yet. Ask the agent to survey the photos."
+                  : "Nothing here."}
               </p>
             ) : (
               visible.map((p) => (
@@ -299,29 +445,56 @@ export function SurveyPage() {
             )}
           </div>
           <p className="hidden border-t border-border px-3 py-2 text-[11px] text-muted-foreground @4xl:block">
-            <Kbd>j</Kbd>/<Kbd>k</Kbd> move · <Kbd>a</Kbd> approve · <Kbd>r</Kbd> reject. Photos: Panoramax, open licence. Map data © OpenStreetMap contributors, ODbL.
+            <Kbd>j</Kbd>/<Kbd>k</Kbd> move · <Kbd>a</Kbd> approve · <Kbd>r</Kbd>{" "}
+            reject. Photos: Panoramax, open licence. Map data © OpenStreetMap
+            contributors, ODbL.
           </p>
         </aside>
       </div>
 
-      <Dialog open={report !== null} onOpenChange={(open) => !open && setReport(null)}>
+      <Dialog
+        open={report !== null}
+        onOpenChange={(open) => !open && setReport(null)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{report?.changesetId ? `Changeset ${report.changesetId}` : "Upload finished"}</DialogTitle>
+            <DialogTitle>
+              {report?.changesetId
+                ? `Changeset ${report.changesetId}`
+                : "Upload finished"}
+            </DialogTitle>
             <DialogDescription>{report?.message}</DialogDescription>
           </DialogHeader>
           <ul className="space-y-2 text-sm">
             {report?.outcomes.map((o) => (
-              <li key={o.proposalId} className="rounded-lg border border-border p-2.5">
+              <li
+                key={o.proposalId}
+                className="rounded-lg border border-border p-2.5"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{o.title}</span>
-                  <span className={cn("text-xs font-semibold uppercase", o.outcome === "uploaded" || o.outcome === "already_applied" ? "text-emerald-600" : "text-rose-600")}>
+                  <span
+                    className={cn(
+                      "text-xs font-semibold uppercase",
+                      o.outcome === "uploaded" ||
+                        o.outcome === "already_applied"
+                        ? "text-emerald-600"
+                        : "text-rose-600",
+                    )}
+                  >
                     {o.outcome.replace("_", " ")}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">{o.detail}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {o.detail}
+                </p>
                 {o.sandboxUrl ? (
-                  <a className="mt-1 inline-flex items-center gap-1 text-xs hover:underline" href={o.sandboxUrl} target="_blank" rel="noreferrer">
+                  <a
+                    className="mt-1 inline-flex items-center gap-1 text-xs hover:underline"
+                    href={o.sandboxUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Open in the sandbox <IconExternalLink className="size-3" />
                   </a>
                 ) : null}
@@ -329,8 +502,14 @@ export function SurveyPage() {
             ))}
           </ul>
           {report?.changesetUrl ? (
-            <a className="inline-flex items-center gap-1 text-sm font-medium hover:underline" href={report.changesetUrl} target="_blank" rel="noreferrer">
-              View the changeset on the OSM sandbox <IconExternalLink className="size-3.5" />
+            <a
+              className="inline-flex items-center gap-1 text-sm font-medium hover:underline"
+              href={report.changesetUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View the changeset on the OSM sandbox{" "}
+              <IconExternalLink className="size-3.5" />
             </a>
           ) : null}
         </DialogContent>

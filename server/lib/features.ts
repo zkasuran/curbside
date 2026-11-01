@@ -5,7 +5,13 @@ import { and, desc, gte } from "drizzle-orm";
 
 import { getDb, schema } from "../db/index.js";
 import { ownedBy, parseJson, type Caller } from "./common.js";
-import { angleDiff, bearingDeg, distanceM, inViewCone, type LatLon } from "./geo.js";
+import {
+  angleDiff,
+  bearingDeg,
+  distanceM,
+  inViewCone,
+  type LatLon,
+} from "./geo.js";
 import { LIMITS } from "./limits.js";
 import { featuresAround, type LiveFeature } from "./overpass.js";
 import { trimTags } from "./tags.js";
@@ -14,24 +20,41 @@ import { trimTags } from "./tags.js";
  * Live features within `radiusM` of `p`. Reuses a stored area that covers the whole circle when
  * one is fresh, otherwise asks Overpass once and stores the answer for the next photos nearby.
  */
-export async function cachedFeaturesAround(who: Caller, p: LatLon, radiusM: number): Promise<LiveFeature[]> {
+export async function cachedFeaturesAround(
+  who: Caller,
+  p: LatLon,
+  radiusM: number,
+): Promise<LiveFeature[]> {
   const db = getDb();
-  const since = new Date(Date.now() - LIMITS.areaFeaturesMaxAgeMs).toISOString();
+  const since = new Date(
+    Date.now() - LIMITS.areaFeaturesMaxAgeMs,
+  ).toISOString();
   const areas = await db
     .select()
     .from(schema.areaFeatures)
-    .where(and(ownedBy(schema.areaFeatures, who), gte(schema.areaFeatures.fetchedAt, since)))
+    .where(
+      and(
+        ownedBy(schema.areaFeatures, who),
+        gte(schema.areaFeatures.fetchedAt, since),
+      ),
+    )
     .orderBy(desc(schema.areaFeatures.fetchedAt))
     .limit(20);
   const cover = areas.find((a) => distanceM(a, p) + radiusM <= a.radiusM);
   if (cover) {
-    return parseJson<LiveFeature[]>(cover.features, []).filter((f) => distanceM(p, f) <= radiusM);
+    return parseJson<LiveFeature[]>(cover.features, []).filter(
+      (f) => distanceM(p, f) <= radiusM,
+    );
   }
   return storeArea(who, p, radiusM);
 }
 
 /** Fetch an area from Overpass and keep it. */
-export async function storeArea(who: Caller, p: LatLon, radiusM: number): Promise<LiveFeature[]> {
+export async function storeArea(
+  who: Caller,
+  p: LatLon,
+  radiusM: number,
+): Promise<LiveFeature[]> {
   const features = await featuresAround(p.lat, p.lon, radiusM);
   await getDb()
     .insert(schema.areaFeatures)
@@ -66,9 +89,12 @@ export function featuresInView(
   camera: LatLon & { azimuth: number | null; fov: number | null },
   features: LiveFeature[],
 ): FeatureInView[] {
-  const flat = camera.azimuth !== null && camera.fov !== null && camera.fov < 300;
+  const flat =
+    camera.azimuth !== null && camera.fov !== null && camera.fov < 300;
   return features
-    .filter((f) => inViewCone(camera, f, camera.azimuth, camera.fov, LIMITS.featureRadiusM))
+    .filter((f) =>
+      inViewCone(camera, f, camera.azimuth, camera.fov, LIMITS.featureRadiusM),
+    )
     .map((f) => {
       const bearing = bearingDeg(camera, f);
       let expectedX: number | null = null;
@@ -88,7 +114,8 @@ export function featuresInView(
         lon: f.lon,
         distanceM: Math.round(distanceM(camera, f)),
         bearing: Math.round(bearing),
-        expectedX: expectedX === null ? null : Math.round(expectedX * 100) / 100,
+        expectedX:
+          expectedX === null ? null : Math.round(expectedX * 100) / 100,
         tags: trimTags(f.tags),
       };
     })

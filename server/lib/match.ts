@@ -14,7 +14,11 @@ export function editDistance(a: string, b: string): number {
   for (let i = 1; i <= a.length; i++) {
     const cur = [i];
     for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min((prev[j] ?? 0) + 1, (cur[j - 1] ?? 0) + 1, (prev[j - 1] ?? 0) + (a[i - 1] === b[j - 1] ? 0 : 1));
+      cur[j] = Math.min(
+        (prev[j] ?? 0) + 1,
+        (cur[j - 1] ?? 0) + 1,
+        (prev[j - 1] ?? 0) + (a[i - 1] === b[j - 1] ? 0 : 1),
+      );
     }
     prev = cur;
   }
@@ -45,7 +49,12 @@ export type Verdict = "same" | "word_order" | "differs" | "not_on_map";
 
 /** Lowercase, no accents or punctuation, word order kept. Signs are often in capitals. */
 function plain(s: string): string {
-  return s.normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  return s
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
 }
 
 export interface MatchResult {
@@ -58,29 +67,58 @@ export interface MatchResult {
  * The map feature a sign belongs to: best name similarity, nudged by how close its expected
  * position in the frame is to where the sign was read. A weak best match means "not on map".
  */
-export function matchReading(reading: Reading, features: FeatureInView[]): MatchResult {
+export function matchReading(
+  reading: Reading,
+  features: FeatureInView[],
+): MatchResult {
   let best: { f: FeatureInView; score: number; sim: number } | null = null;
   for (const f of features) {
-    const names = [f.tags.name, f.tags.brand, f.tags.old_name, f.tags.alt_name].filter((n): n is string => Boolean(n));
+    const names = [
+      f.tags.name,
+      f.tags.brand,
+      f.tags.old_name,
+      f.tags.alt_name,
+    ].filter((n): n is string => Boolean(n));
     if (!names.length) continue;
     const sim = Math.max(...names.map((n) => nameSimilarity(reading.text, n)));
     const xBonus =
-      reading.x !== undefined && f.expectedX !== null ? Math.max(0, 0.15 - Math.abs(reading.x - f.expectedX) * 0.3) : 0;
+      reading.x !== undefined && f.expectedX !== null
+        ? Math.max(0, 0.15 - Math.abs(reading.x - f.expectedX) * 0.3)
+        : 0;
     const score = sim + xBonus;
     if (!best || score > best.score) best = { f, score, sim };
   }
-  if (!best || best.sim < 0.55) return { verdict: "not_on_map", similarity: best?.sim ?? 0, feature: null };
-  const mapNames = [best.f.tags.name, best.f.tags.brand].filter((n): n is string => Boolean(n));
+  if (!best || best.sim < 0.55)
+    return { verdict: "not_on_map", similarity: best?.sim ?? 0, feature: null };
+  const mapNames = [best.f.tags.name, best.f.tags.brand].filter(
+    (n): n is string => Boolean(n),
+  );
   const sim = Math.round(best.sim * 100) / 100;
-  if (mapNames.some((n) => plain(n) === plain(reading.text))) return { verdict: "same", similarity: sim, feature: best.f };
-  if (mapNames.some((n) => foldName(n) === foldName(reading.text))) return { verdict: "word_order", similarity: sim, feature: best.f };
+  if (mapNames.some((n) => plain(n) === plain(reading.text)))
+    return { verdict: "same", similarity: sim, feature: best.f };
+  if (mapNames.some((n) => foldName(n) === foldName(reading.text)))
+    return { verdict: "word_order", similarity: sim, feature: best.f };
   return { verdict: "differs", similarity: sim, feature: best.f };
 }
 
 /** What the agent may see before it reads: where features are and what kind, never their names. */
 export function blindFeature(f: FeatureInView) {
-  const kind = ["shop", "amenity", "craft", "office", "tourism", "leisure", "healthcare", "club"]
+  const kind = [
+    "shop",
+    "amenity",
+    "craft",
+    "office",
+    "tourism",
+    "leisure",
+    "healthcare",
+    "club",
+  ]
     .map((k) => (f.tags[k] ? `${k}=${f.tags[k]}` : null))
     .find(Boolean);
-  return { ref: f.target, kind: kind ?? "feature", expectedX: f.expectedX, distanceM: f.distanceM };
+  return {
+    ref: f.target,
+    kind: kind ?? "feature",
+    expectedX: f.expectedX,
+    distanceM: f.distanceM,
+  };
 }

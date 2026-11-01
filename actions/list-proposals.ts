@@ -11,8 +11,15 @@ export default defineAction({
   description:
     "List drafted map edits in the review queue, newest first, with their tag diff, evidence, confidence and status (pending, approved, rejected, uploading, uploaded, conflict, failed).",
   schema: z.object({
-    status: z.array(z.enum(PROPOSAL_STATUSES)).optional().describe("Only these statuses; omit for all"),
-    photoId: z.string().uuid().optional().describe("Only proposals backed by this photo"),
+    status: z
+      .array(z.enum(PROPOSAL_STATUSES))
+      .optional()
+      .describe("Only these statuses; omit for all"),
+    photoId: z
+      .string()
+      .uuid()
+      .optional()
+      .describe("Only proposals backed by this photo"),
   }),
   http: { method: "GET" },
   readOnly: true,

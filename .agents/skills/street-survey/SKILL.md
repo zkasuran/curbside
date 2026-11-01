@@ -2,7 +2,7 @@
 name: street-survey
 description: >-
   How Curbside surveys a street: read each photo's signs blind, compare with
-  OpenStreetMap, and draft only edits a photo proves. Use for any request to
+  OpenStreetMap and draft only edits a photo proves. Use for any request to
   survey, check, fix or update the map from street photos.
 scope: both
 ---
@@ -23,5 +23,5 @@ scope: both
    Pass `readingId`. Evidence quotes the sign in plain words; rationale says why.
 5. Confidence: 0.8 to 0.95 for a clear sign that differs only in wording; lower for anything
    inferred. Never propose closure from absence: a place you cannot see may be hidden.
-6. Finish with `navigate` to `view=survey`, `filter=pending`, and a two-line summary.
+6. Finish with `navigate` to `view=survey`, `filter=pending` and a two-line summary.
    Never approve or upload unless the person asks; both pause for their confirmation.

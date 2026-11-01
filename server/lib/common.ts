@@ -16,14 +16,24 @@ export interface Caller {
 
 export function caller(ctx: ActionRunContext | undefined): Caller {
   const ownerEmail = ctx?.userEmail;
-  if (!ownerEmail) fail("Sign in to survey streets.", { errorCode: "unauthenticated", statusCode: 401 });
+  if (!ownerEmail)
+    fail("Sign in to survey streets.", {
+      errorCode: "unauthenticated",
+      statusCode: 401,
+    });
   return { ownerEmail, orgId: ctx?.orgId ?? null };
 }
 
 /** Row filter: this user's rows within the active org (or no org). */
-export function ownedBy<T extends { ownerEmail: unknown; orgId: unknown }>(table: T, who: Caller) {
+export function ownedBy<T extends { ownerEmail: unknown; orgId: unknown }>(
+  table: T,
+  who: Caller,
+) {
   const t = table as unknown as typeof schema.photos;
-  return and(eq(t.ownerEmail, who.ownerEmail), who.orgId ? eq(t.orgId, who.orgId) : isNull(t.orgId));
+  return and(
+    eq(t.ownerEmail, who.ownerEmail),
+    who.orgId ? eq(t.orgId, who.orgId) : isNull(t.orgId),
+  );
 }
 
 export function nowIso(): string {
@@ -41,15 +51,22 @@ export function parseJson<T>(text: string | null, fallback: T): T {
 
 /** Turn library errors into action failures with stable codes, so the agent can branch on them. */
 export function rethrow(error: unknown): never {
-  if (error instanceof TagError) fail(error.message, { errorCode: error.code, statusCode: 400 });
+  if (error instanceof TagError)
+    fail(error.message, { errorCode: error.code, statusCode: 400 });
   if (error instanceof OsmConfigError)
-    fail(error.message, { errorCode: "sandbox_not_configured", statusCode: 503 });
+    fail(error.message, {
+      errorCode: "sandbox_not_configured",
+      statusCode: 503,
+    });
   if (error instanceof HttpError) {
     const status = error.status === 429 || error.status >= 500 ? 503 : 502;
-    fail(`${error.message}${error.body ? `: ${error.body.slice(0, 200)}` : ""}`, {
-      errorCode: "upstream_error",
-      statusCode: status,
-    });
+    fail(
+      `${error.message}${error.body ? `: ${error.body.slice(0, 200)}` : ""}`,
+      {
+        errorCode: "upstream_error",
+        statusCode: status,
+      },
+    );
   }
   throw error;
 }
@@ -91,13 +108,17 @@ export function proposalDto(p: ProposalRow) {
     set: patch.set,
     remove: patch.remove,
     evidence: p.evidence,
-    evidenceBox: parseJson<[number, number, number, number] | null>(p.evidenceBox, null),
+    evidenceBox: parseJson<[number, number, number, number] | null>(
+      p.evidenceBox,
+      null,
+    ),
     rationale: p.rationale,
     confidence: p.confidence,
     status: p.status,
     reviewNote: p.reviewNote,
     editedByReviewer: p.editedByReviewer === 1,
-    sandbox: p.sandboxType && p.sandboxId ? `${p.sandboxType}/${p.sandboxId}` : null,
+    sandbox:
+      p.sandboxType && p.sandboxId ? `${p.sandboxType}/${p.sandboxId}` : null,
     resultVersion: p.resultVersion,
     changesetId: p.changesetId,
     error: p.error,

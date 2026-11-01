@@ -13,18 +13,39 @@ export default defineAction({
   http: false,
   readOnly: true,
   run: async (_args, ctx) => {
-    const navigation = (await readAppState("navigation")) as Record<string, unknown> | null;
+    const navigation = (await readAppState("navigation")) as Record<
+      string,
+      unknown
+    > | null;
     if (!navigation) return "No application state found. Is the app open?";
     const screen: Record<string, unknown> = { navigation };
     if (ctx?.userEmail) {
       const who = { ownerEmail: ctx.userEmail, orgId: ctx.orgId ?? null };
       const db = getDb();
       if (typeof navigation.photoId === "string") {
-        const [p] = await db.select().from(schema.photos).where(and(eq(schema.photos.id, navigation.photoId), ownedBy(schema.photos, who))).limit(1);
+        const [p] = await db
+          .select()
+          .from(schema.photos)
+          .where(
+            and(
+              eq(schema.photos.id, navigation.photoId),
+              ownedBy(schema.photos, who),
+            ),
+          )
+          .limit(1);
         if (p) screen.selectedPhoto = photoDto(p);
       }
       if (typeof navigation.proposalId === "string") {
-        const [p] = await db.select().from(schema.proposals).where(and(eq(schema.proposals.id, navigation.proposalId), ownedBy(schema.proposals, who))).limit(1);
+        const [p] = await db
+          .select()
+          .from(schema.proposals)
+          .where(
+            and(
+              eq(schema.proposals.id, navigation.proposalId),
+              ownedBy(schema.proposals, who),
+            ),
+          )
+          .limit(1);
         if (p) screen.selectedProposal = proposalDto(p);
       }
     }

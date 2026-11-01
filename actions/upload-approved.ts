@@ -10,17 +10,33 @@ export default defineAction({
   description:
     "Upload approved edits to the OpenStreetMap development sandbox in one changeset (never live OSM). Re-reads each element first: a key someone changed since approval marks that edit conflict instead of overwriting it. Reads every result back before calling it uploaded. Always needs a person's confirmation.",
   schema: z.object({
-    ids: z.array(z.string().uuid()).max(LIMITS.proposalsPerUpload).optional().describe("Approved proposal ids; omit to upload the oldest approved ones (up to 10)"),
-    comment: z.string().max(LIMITS.changesetCommentMaxChars).optional().describe("Changeset comment; a summary is written when omitted"),
+    ids: z
+      .array(z.string().uuid())
+      .max(LIMITS.proposalsPerUpload)
+      .optional()
+      .describe(
+        "Approved proposal ids; omit to upload the oldest approved ones (up to 10)",
+      ),
+    comment: z
+      .string()
+      .max(LIMITS.changesetCommentMaxChars)
+      .optional()
+      .describe("Changeset comment; a summary is written when omitted"),
   }),
   needsApproval: true,
   run: async ({ ids, comment }, ctx) => {
     const who = caller(ctx);
     try {
       const report = await uploadApproved(who, ids, comment);
-      const up = report.outcomes.filter((o) => o.outcome === "uploaded" || o.outcome === "already_applied").length;
-      const conflicts = report.outcomes.filter((o) => o.outcome === "conflict").length;
-      const released = report.outcomes.filter((o) => o.outcome === "released" || o.outcome === "failed");
+      const up = report.outcomes.filter(
+        (o) => o.outcome === "uploaded" || o.outcome === "already_applied",
+      ).length;
+      const conflicts = report.outcomes.filter(
+        (o) => o.outcome === "conflict",
+      ).length;
+      const released = report.outcomes.filter(
+        (o) => o.outcome === "released" || o.outcome === "failed",
+      );
       return {
         ...report,
         message: report.changesetId

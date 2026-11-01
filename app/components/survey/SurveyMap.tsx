@@ -3,7 +3,6 @@
 // Plain Leaflet behind one effect, so nothing touches `window` during server rendering.
 
 import "leaflet/dist/leaflet.css";
-
 import * as LeafletNs from "leaflet";
 import type * as Leaflet from "leaflet";
 import { useEffect, useRef } from "react";
@@ -22,7 +21,12 @@ interface Props {
 }
 
 const R = 6_371_008.8;
-function offset(lat: number, lon: number, bearing: number, d: number): [number, number] {
+function offset(
+  lat: number,
+  lon: number,
+  bearing: number,
+  d: number,
+): [number, number] {
   const b = (bearing * Math.PI) / 180;
   const dLat = (d * Math.cos(b)) / R;
   const dLon = (d * Math.sin(b)) / (R * Math.cos((lat * Math.PI) / 180));
@@ -32,7 +36,8 @@ function offset(lat: number, lon: number, bearing: number, d: number): [number, 
 function cone(p: Photo, length = 26): [number, number][] {
   if (p.azimuth === null || p.fov === null || p.fov >= 300) return [];
   const pts: [number, number][] = [[p.lat, p.lon]];
-  for (let a = -p.fov / 2; a <= p.fov / 2; a += p.fov / 8) pts.push(offset(p.lat, p.lon, p.azimuth + a, length));
+  for (let a = -p.fov / 2; a <= p.fov / 2; a += p.fov / 8)
+    pts.push(offset(p.lat, p.lon, p.azimuth + a, length));
   return pts;
 }
 
@@ -56,17 +61,23 @@ export default function SurveyMap(props: Props) {
     let resize: ResizeObserver | null = null;
     void Promise.resolve(LeafletNs).then((mod) => {
       if (cancelled || !el.current || map.current) return;
-      const ns = mod as unknown as typeof Leaflet & { default?: typeof Leaflet };
-      const leaflet = typeof ns.map === "function" ? ns : (ns.default as typeof Leaflet);
+      const ns = mod as unknown as typeof Leaflet & {
+        default?: typeof Leaflet;
+      };
+      const leaflet =
+        typeof ns.map === "function" ? ns : (ns.default as typeof Leaflet);
       L.current = leaflet;
-      const m = leaflet.map(el.current, { zoomControl: true, attributionControl: true }).setView(
-        [props.initialCenter.lat, props.initialCenter.lon],
-        props.initialCenter.zoom,
-      );
+      const m = leaflet
+        .map(el.current, { zoomControl: true, attributionControl: true })
+        .setView(
+          [props.initialCenter.lat, props.initialCenter.lon],
+          props.initialCenter.zoom,
+        );
       leaflet
         .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · photos <a href="https://panoramax.fr">Panoramax</a>',
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · photos <a href="https://panoramax.fr">Panoramax</a>',
           className: "curbside-tiles",
         })
         .addTo(m);
@@ -100,7 +111,8 @@ export default function SurveyMap(props: Props) {
     const m = map.current;
     if (!leaflet || !group || !m) return;
     group.clearLayers();
-    const { photos, proposals, selectedPhotoId, selectedProposalId } = cb.current;
+    const { photos, proposals, selectedPhotoId, selectedProposalId } =
+      cb.current;
     for (const p of photos) {
       const selected = p.id === selectedPhotoId;
       const pts = cone(p);
@@ -123,7 +135,9 @@ export default function SurveyMap(props: Props) {
           fillColor: selected ? "#d97706" : "#334155",
           fillOpacity: 1,
         })
-        .bindTooltip(`Photo ${p.capturedAt.slice(0, 10)}${p.inspected ? " · inspected" : ""}`)
+        .bindTooltip(
+          `Photo ${p.capturedAt.slice(0, 10)}${p.inspected ? " · inspected" : ""}`,
+        )
         .on("click", () => cb.current.onSelectPhoto(p.id))
         .addTo(group);
     }
@@ -132,7 +146,11 @@ export default function SurveyMap(props: Props) {
       const selected = p.id === selectedProposalId;
       leaflet
         .marker([p.lat, p.lon], {
-          icon: leaflet.divIcon({ className: "", html: pinHtml(STATUS_META[p.status].pin, selected, p.title), iconSize: [0, 0] }),
+          icon: leaflet.divIcon({
+            className: "",
+            html: pinHtml(STATUS_META[p.status].pin, selected, p.title),
+            iconSize: [0, 0],
+          }),
           zIndexOffset: selected ? 1000 : 0,
           keyboard: true,
           title: p.title,
@@ -143,19 +161,39 @@ export default function SurveyMap(props: Props) {
     const size = m.getSize();
     if (!fitted.current && photos.length && size.x > 50 && size.y > 50) {
       fitted.current = true;
-      const b = leaflet.latLngBounds(photos.map((p) => [p.lat, p.lon] as [number, number]));
+      const b = leaflet.latLngBounds(
+        photos.map((p) => [p.lat, p.lon] as [number, number]),
+      );
       m.fitBounds(b.pad(0.6), { maxZoom: 19 });
     }
   }
 
   useEffect(() => {
     draw();
-    const sel = props.proposals.find((p) => p.id === props.selectedProposalId) ?? props.photos.find((p) => p.id === props.selectedPhotoId);
-    if (sel && map.current && !map.current.getBounds().pad(-0.15).contains([sel.lat, sel.lon])) {
+    const sel =
+      props.proposals.find((p) => p.id === props.selectedProposalId) ??
+      props.photos.find((p) => p.id === props.selectedPhotoId);
+    if (
+      sel &&
+      map.current &&
+      !map.current.getBounds().pad(-0.15).contains([sel.lat, sel.lon])
+    ) {
       map.current.panTo([sel.lat, sel.lon]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.photos, props.proposals, props.selectedPhotoId, props.selectedProposalId]);
+  }, [
+    props.photos,
+    props.proposals,
+    props.selectedPhotoId,
+    props.selectedProposalId,
+  ]);
 
-  return <div ref={el} className="curbside-map h-full w-full" role="application" aria-label="Survey map" />;
+  return (
+    <div
+      ref={el}
+      className="curbside-map h-full w-full"
+      role="application"
+      aria-label="Survey map"
+    />
+  );
 }

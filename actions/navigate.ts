@@ -4,15 +4,22 @@ import { z } from "zod";
 
 export default defineAction({
   description:
-    "Move the user's screen. view=survey opens the map and review queue; add photoId to open a photo, proposalId to select a drafted edit, filter (pending, approved, conflict, uploaded, all) and center (\"lat,lon,zoom\").",
+    'Move the user\'s screen. view=survey opens the map and review queue; add photoId to open a photo, proposalId to select a drafted edit, filter (pending, approved, conflict, uploaded, all) and center ("lat,lon,zoom").',
   schema: z.object({
     view: z.string().optional().describe("View name to navigate to"),
     path: z.string().optional().describe("URL path to navigate to"),
     threadId: z.string().optional().describe("Chat thread ID to open"),
     photoId: z.string().uuid().optional().describe("Survey photo to open"),
     proposalId: z.string().uuid().optional().describe("Drafted edit to select"),
-    filter: z.enum(["pending", "approved", "conflict", "uploaded", "all"]).optional().describe("Review queue filter"),
-    center: z.string().regex(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?(,\d{1,2})?$/u).optional().describe('Map center "lat,lon" or "lat,lon,zoom"'),
+    filter: z
+      .enum(["pending", "approved", "conflict", "uploaded", "all"])
+      .optional()
+      .describe("Review queue filter"),
+    center: z
+      .string()
+      .regex(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?(,\d{1,2})?$/u)
+      .optional()
+      .describe('Map center "lat,lon" or "lat,lon,zoom"'),
   }),
   http: false,
   run: async (args) => {
