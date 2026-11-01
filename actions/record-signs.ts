@@ -65,7 +65,6 @@ export default defineAction({
           match: m,
         };
       });
-      await db.delete(schema.signReadings).where(and(ownedBy(schema.signReadings, who), eq(schema.signReadings.photoId, photoId)));
       await db.insert(schema.signReadings).values(rows.map((r) => r.row));
       const matched = new Set(rows.map((r) => r.match.feature?.target).filter(Boolean));
       return {

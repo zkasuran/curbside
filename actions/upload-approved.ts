@@ -20,11 +20,12 @@ export default defineAction({
       const report = await uploadApproved(who, ids, comment);
       const up = report.outcomes.filter((o) => o.outcome === "uploaded" || o.outcome === "already_applied").length;
       const conflicts = report.outcomes.filter((o) => o.outcome === "conflict").length;
+      const released = report.outcomes.filter((o) => o.outcome === "released" || o.outcome === "failed");
       return {
         ...report,
         message: report.changesetId
           ? `Changeset ${report.changesetId}: ${up} uploaded and verified${conflicts ? `, ${conflicts} held back as conflicts` : ""}.`
-          : `Nothing written${conflicts ? `; ${conflicts} conflicts need a rebase` : ""}.`,
+          : `Nothing written${conflicts ? `; ${conflicts} conflicts need a rebase` : ""}${released.length ? `; ${released.length} still approved: ${released[0]?.detail}` : ""}.`,
       };
     } catch (error) {
       rethrow(error);

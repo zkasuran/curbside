@@ -110,9 +110,14 @@ check("Bar Monaco matches node/6860044207 as a word-order difference", monaco?.v
 check("SAKURA matches the mapped restaurant as the same name", rec.body.readings?.find((r) => r.read === "SAKURA")?.verdict === "same");
 
 // 4. Guardrails before anything is written.
-const dup = await act("propose-edit", { photoId: photo.id, kind: "create", set: { amenity: "bar", name: "Bar Monaco" }, evidence: "Awning reads Bar Monaco", rationale: "test", confidence: 0.6 });
-check("a new point duplicating a mapped place is refused", /looks like node\/6860044207/u.test(dup.error), dup.error);
-const far = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "10658448611", set: { name: "X" }, evidence: "x x", rationale: "x x", confidence: 0.5 });
+const dup = await act("propose-edit", { photoId: photo.id, kind: "create", set: { amenity: "bar", name: "Bar Monaco" }, evidence: "Awning reads Bar Monaco", rationale: "test", confidence: 0.6, readingId: monaco.readingId });
+check("a new point for a sign that matched a mapped place is refused", /matched node\/6860044207/u.test(dup.error), dup.error);
+const noReading = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { name: "Le Voltaire" }, evidence: "x x", rationale: "x x", confidence: 0.9 });
+check("a rename with no sign reading behind it is refused", /needs the readingId/u.test(noReading.error), noReading.error);
+const sakuraReading = rec.body.readings?.find((r) => r.read === "SAKURA");
+const wrongPlace = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { name: "Sakura" }, evidence: "x x", rationale: "x x", confidence: 0.9, readingId: sakuraReading.readingId });
+check("renaming a place with another sign's reading is refused", /did not match node\/6860044207/u.test(wrongPlace.error), wrongPlace.error);
+const far = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "10658448611", set: { opening_hours: "Mo-Su 08:00-20:00" }, evidence: "x x", rationale: "x x", confidence: 0.5 });
 check("editing a feature outside the photo's view is refused", /outside what this photo can see|not on the live map/u.test(far.error), far.error);
 const reserved = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { created_by: "me" }, evidence: "x x", rationale: "x x", confidence: 0.5 });
 check("reserved tags are refused", /cannot be changed from a street photo/u.test(reserved.error), reserved.error);
@@ -122,7 +127,7 @@ check("upload with nothing approved writes nothing", /Nothing is approved/u.test
 // 5. The happy path: draft, approve, upload, verify independently.
 const draft = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { name: "Bar Monaco" }, evidence: 'The awning reads "Bar Monaco".', rationale: "Sign and map disagree on the word order of the name.", confidence: 0.85, readingId: monaco.readingId });
 check("rename drafted as pending with the reading's box as evidence", draft.body.status === "pending" && Array.isArray(draft.body.evidenceBox), draft.body.id);
-const again = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { name: "Bar Monaco" }, evidence: "dup dup", rationale: "dup dup", confidence: 0.85 });
+const again = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { name: "Bar Monaco" }, evidence: "dup dup", rationale: "dup dup", confidence: 0.85, readingId: monaco.readingId });
 check("a second open proposal on the same element is refused", /already targets node\/6860044207/u.test(again.error), again.error);
 const unapprovedUpload = await act("upload-approved", {}, { approved: true });
 check("a pending (unapproved) edit is never uploaded", /Nothing is approved/u.test(unapprovedUpload.error), unapprovedUpload.error);
@@ -130,6 +135,7 @@ await act("review-proposal", { ids: [draft.body.id], decision: "approve" }, { ap
 const up1 = await act("upload-approved", {}, { approved: true });
 const o1 = up1.body.outcomes?.[0];
 check("upload writes one changeset and verifies by read-back", up1.body.verified && o1?.outcome === "uploaded", up1.body.message);
+if (o1?.outcome !== "uploaded") console.log(JSON.stringify(up1.body).slice(0, 800));
 const nodeId = o1?.sandbox?.split("/")[1];
 const live1 = await sandbox(`/node/${nodeId}.json`);
 check("stranger read of the sandbox shows the new name", live1.elements[0].tags.name === "Bar Monaco", `node/${nodeId} v${live1.elements[0].version}`);
@@ -137,7 +143,7 @@ const cs1 = await sandbox(`/changeset/${up1.body.changesetId}.json`);
 check("changeset is closed and carries source and AI note", cs1.changeset.open === false && cs1.changeset.tags.source === "survey;Panoramax" && /approved by a person/u.test(cs1.changeset.tags["curbside:note"] ?? ""), up1.body.changesetId);
 
 // 6. Retry safety: approving the same change again must not write a new version.
-const redo = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { name: "Bar Monaco" }, evidence: 'The awning reads "Bar Monaco".', rationale: "Re-drafted from the live map, which still has the old name.", confidence: 0.85 });
+const redo = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "6860044207", set: { name: "Bar Monaco" }, evidence: 'The awning reads "Bar Monaco".', rationale: "Re-drafted from the live map, which still has the old name.", confidence: 0.85, readingId: monaco.readingId });
 await act("review-proposal", { ids: [redo.body.id], decision: "approve" }, { approved: true });
 const up2 = await act("upload-approved", {}, { approved: true });
 const live2 = await sandbox(`/node/${nodeId}.json`);
@@ -163,14 +169,18 @@ check("after rebase and approval the edit lands", up4.body.outcomes?.[0]?.outcom
 check("the other mapper's phone number (a key the edit never touched) survived the merge", after4.tags.phone === "+33 1 43 00 00 00" && after4.tags.name === "Bar Monaco");
 
 // 9. Interrupted upload: the write lands, then the process dies before it records the outcome.
-const newPlace = await act("propose-edit", { photoId: photo.id, kind: "create", set: { shop: "florist", name: `Curbside e2e florist ${Date.now().toString(36)}` }, evidence: "Fixture: a florist sign.", rationale: "Exercises the interrupted-upload path.", confidence: 0.5 });
+const floristName = `Curbside e2e florist ${Date.now().toString(36)}`;
+const floristRec = await act("record-signs", { photoId: photo.id, readings: [{ text: floristName, kind: "florist", box: [0.7, 0.4, 0.1, 0.06], legibility: "clear" }] });
+const floristReading = floristRec.body.readings?.[0];
+check("an unknown sign is reported as not on the map", floristReading?.verdict === "not_on_map");
+const newPlace = await act("propose-edit", { photoId: photo.id, kind: "create", set: { shop: "florist", name: floristName }, evidence: "Fixture: a florist sign.", rationale: "Exercises the interrupted-upload path.", confidence: 0.5, readingId: floristReading.readingId });
 await act("review-proposal", { ids: [newPlace.body.id], decision: "approve" }, { approved: true });
 const crash = await act("upload-approved", { comment: "Curbside e2e interrupted upload [fault:after_upload]" }, { approved: true });
-check("the injected crash interrupts the upload after the write", crash.status >= 500, `HTTP ${crash.status}`);
+check("the injected crash interrupts the upload after the write", crash.status >= 500 && !/Nothing is approved/u.test(crash.error), `HTTP ${crash.status} ${crash.error.slice(0, 80)}`);
 const stuck = await act("list-proposals", { status: ["uploading"] });
 check("the proposal is left mid-upload, as a real crash would leave it", stuck.body.proposals?.some((p) => p.id === newPlace.body.id));
 await sleep(2500);
-const other = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "2914625161", set: { "survey:date": photo.capturedAt.slice(0, 10) }, evidence: "SAKURA sign visible (fixture).", rationale: "Exercises reconcile alongside a normal upload.", confidence: 0.6 });
+const other = await act("propose-edit", { photoId: photo.id, kind: "modify", osmType: "node", osmId: "2914625161", set: { "survey:date": photo.capturedAt.slice(0, 10) }, evidence: "SAKURA sign visible (fixture).", rationale: "Exercises reconcile alongside a normal upload.", confidence: 0.6, readingId: sakuraReading.readingId });
 await act("review-proposal", { ids: [other.body.id], decision: "approve" }, { approved: true });
 const up5 = await act("upload-approved", {}, { approved: true });
 const rec5 = up5.body.reconciled?.find((r) => r.proposalId === newPlace.body.id);

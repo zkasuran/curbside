@@ -76,6 +76,32 @@ export default defineAction({
         if (!reading) fail("That reading is not from this photo.", { errorCode: "reading_not_found", statusCode: 404 });
         evidenceBox ??= reading.box ? (JSON.parse(reading.box) as [number, number, number, number]) : null;
       }
+      // The server, not the model, ties an edit to what was read on the street.
+      const reading = args.readingId
+        ? (await db.select().from(schema.signReadings).where(eq(schema.signReadings.id, args.readingId)).limit(1))[0]
+        : undefined;
+      const target = args.kind === "modify" ? `${args.osmType}/${args.osmId}` : null;
+      const touchesSignFacts = ["name", "check_date", "survey:date"].some((k) => k in patch.set);
+      if (args.kind === "modify" && touchesSignFacts) {
+        if (!reading)
+          fail("A name or confirmation edit needs the readingId of the sign it rests on.", { errorCode: "reading_required", statusCode: 400 });
+        if (reading.matchTarget !== target || reading.verdict === "not_on_map")
+          fail(`The reading "${reading.text}" did not match ${target} (verdict ${reading.verdict}). Do not rename a different place; if the sign is a new business, propose kind create.`, {
+            errorCode: "reading_mismatch",
+            statusCode: 409,
+          });
+        if ("name" in patch.set && reading.verdict === "same")
+          fail("The sign already matches the map name.", { errorCode: "no_change", statusCode: 409 });
+        if (reading.legibility !== "clear")
+          fail("A partly legible sign cannot back an edit.", { errorCode: "reading_partial", statusCode: 409 });
+      }
+      if (args.kind === "create") {
+        if (!reading) fail("A new place needs the readingId of its sign.", { errorCode: "reading_required", statusCode: 400 });
+        if (reading.verdict !== "not_on_map")
+          fail(`"${reading.text}" matched ${reading.matchTarget} on the map; propose a modify on it instead.`, { errorCode: "duplicate_feature", statusCode: 409 });
+        if (reading.legibility !== "clear")
+          fail("A partly legible sign cannot back a new place.", { errorCode: "reading_partial", statusCode: 409 });
+      }
 
       let tagsBefore: Tags = {};
       let lat: number;
@@ -136,7 +162,11 @@ export default defineAction({
           fail("The new point is too far from the photo that shows it.", { errorCode: "target_out_of_view", statusCode: 400 });
         lat = round7(at.lat);
         lon = round7(at.lon);
-        const live = await cachedFeaturesAround(who, at, LIMITS.duplicateRadiusM);
+        // Prefer the area around the new point; when the public map service is busy, fall back to
+        // the photo's own cached view, which is what the agent compared against.
+        const live = await cachedFeaturesAround(who, at, LIMITS.duplicateRadiusM).catch(() =>
+          cachedFeaturesAround(who, photo, LIMITS.featureRadiusM),
+        );
         const pendingCreates = await db
           .select()
           .from(schema.proposals)
