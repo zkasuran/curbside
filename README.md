@@ -8,6 +8,7 @@
 
 <p align="center">
   <a href="https://curbside-map.vercel.app"><b>Live demo</b></a> ·
+  <a href="https://curbside-street.vercel.app"><b>Product site</b></a> ·
   <a href="#try-it-in-60-seconds"><b>Try it</b></a> ·
   <a href="#how-it-works"><b>How it works</b></a> ·
   <a href="#built-to-be-trusted"><b>Safety</b></a> ·
