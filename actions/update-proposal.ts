@@ -21,6 +21,7 @@ import {
   validateEvidenceBox,
   validateSpecialValues,
 } from "../server/lib/proposal-rules.js";
+import { assertReadingBacksEdit } from "../server/lib/reading-guard.js";
 import {
   applyPatch,
   effectivePatch,
@@ -77,6 +78,11 @@ export default defineAction({
       .boolean()
       .default(false)
       .describe("Refresh the snapshot from the element as it is now"),
+    readingId: z
+      .string()
+      .uuid()
+      .optional()
+      .describe("Agent only: the sign reading a changed name or confirmation rests on"),
   }),
   run: async (args, ctx) => {
     const who = caller(ctx);
@@ -117,6 +123,20 @@ export default defineAction({
         remove: args.remove ?? old.remove,
       });
       validateSpecialValues(patch.set);
+      // A person editing in the review queue owns their change. The agent must show its reading.
+      const signFactsChanged = ["name", "check_date", "survey:date"].some(
+        (k) => patch.set[k] !== old.set[k],
+      );
+      if (ctx?.caller === "tool" && signFactsChanged) {
+        await assertReadingBacksEdit(who, {
+          photoId: row.photoId,
+          kind: row.kind,
+          target:
+            row.osmType && row.osmId ? `${row.osmType}/${row.osmId}` : null,
+          set: patch.set,
+          readingId: args.readingId,
+        });
+      }
       const finalPatch =
         row.kind === "modify" ? effectivePatch(tagsBefore, patch) : patch;
       if (Object.keys(finalPatch.set).length + finalPatch.remove.length === 0)

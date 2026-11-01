@@ -241,6 +241,34 @@ check(
   /did not match node\/6860044207/u.test(wrongPlace.error),
   wrongPlace.error,
 );
+const misread = await act("record-signs", {
+  photoId: photo.id,
+  readings: [
+    {
+      text: "SAMIRA",
+      kind: "restaurant",
+      box: [0.36, 0.44, 0.08, 0.04],
+      legibility: "clear",
+    },
+  ],
+});
+const samira = misread.body.readings?.[0];
+const misRename = await act("propose-edit", {
+  photoId: photo.id,
+  kind: "modify",
+  osmType: "node",
+  osmId: "2914625161",
+  set: { name: "SAMIRA" },
+  evidence: "x x",
+  rationale: "x x",
+  confidence: 0.9,
+  readingId: samira?.readingId,
+});
+check(
+  "a misread too far from the mapped name cannot rename it",
+  samira?.verdict === "differs" && /too different/u.test(misRename.error),
+  misRename.error,
+);
 const far = await act("propose-edit", {
   photoId: photo.id,
   kind: "modify",

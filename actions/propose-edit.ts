@@ -24,6 +24,7 @@ import {
   validateEvidenceBox,
   validateSpecialValues,
 } from "../server/lib/proposal-rules.js";
+import { assertReadingBacksEdit } from "../server/lib/reading-guard.js";
 import {
   applyPatch,
   effectivePatch,
@@ -157,63 +158,13 @@ export default defineAction({
           : null;
       }
       // The server, not the model, ties an edit to what was read on the street.
-      const reading = args.readingId
-        ? (
-            await db
-              .select()
-              .from(schema.signReadings)
-              .where(eq(schema.signReadings.id, args.readingId))
-              .limit(1)
-          )[0]
-        : undefined;
-      const target =
-        args.kind === "modify" ? `${args.osmType}/${args.osmId}` : null;
-      const touchesSignFacts = ["name", "check_date", "survey:date"].some(
-        (k) => k in patch.set,
-      );
-      if (args.kind === "modify" && touchesSignFacts) {
-        if (!reading)
-          fail(
-            "A name or confirmation edit needs the readingId of the sign it rests on.",
-            { errorCode: "reading_required", statusCode: 400 },
-          );
-        if (reading.matchTarget !== target || reading.verdict === "not_on_map")
-          fail(
-            `The reading "${reading.text}" did not match ${target} (verdict ${reading.verdict}). Do not rename a different place; if the sign is a new business, propose kind create.`,
-            {
-              errorCode: "reading_mismatch",
-              statusCode: 409,
-            },
-          );
-        if ("name" in patch.set && reading.verdict === "same")
-          fail("The sign already matches the map name.", {
-            errorCode: "no_change",
-            statusCode: 409,
-          });
-        if (reading.legibility !== "clear")
-          fail("A partly legible sign cannot back an edit.", {
-            errorCode: "reading_partial",
-            statusCode: 409,
-          });
-      }
-      if (args.kind === "create") {
-        if (!reading)
-          fail("A new place needs the readingId of its sign.", {
-            errorCode: "reading_required",
-            statusCode: 400,
-          });
-        if (reading.verdict !== "not_on_map")
-          fail(
-            `"${reading.text}" matched ${reading.matchTarget} on the map; propose a modify on it instead.`,
-            { errorCode: "duplicate_feature", statusCode: 409 },
-          );
-        if (reading.legibility !== "clear")
-          fail("A partly legible sign cannot back a new place.", {
-            errorCode: "reading_partial",
-            statusCode: 409,
-          });
-      }
-
+      await assertReadingBacksEdit(who, {
+        photoId: photo.id,
+        kind: args.kind,
+        target: args.kind === "modify" ? `${args.osmType}/${args.osmId}` : null,
+        set: patch.set,
+        readingId: args.readingId,
+      });
       let tagsBefore: Tags = {};
       let lat: number;
       let lon: number;
