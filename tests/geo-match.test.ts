@@ -187,3 +187,37 @@ describe("proposal rules", () => {
     }
   });
 });
+
+describe("placeAtSign", () => {
+  it("finds the mapped place standing where an unmatched sign was read, and nothing elsewhere", async () => {
+    const { placeAtSign } = await import("../server/lib/match");
+    const fs = featuresInView(camera, [
+      {
+        type: "node",
+        id: "6860044207",
+        version: 5,
+        ...bar,
+        tags: { amenity: "bar", name: "Monaco Bar" },
+      },
+    ]);
+    expect(placeAtSign(0.25, fs)?.id).toBe("6860044207");
+    expect(placeAtSign(0.6, fs)).toBeNull();
+    expect(placeAtSign(undefined, fs)).toBeNull();
+  });
+});
+
+describe("placeAtSign ignores street furniture", () => {
+  it("a branded recycling container is not a shopfront", async () => {
+    const { placeAtSign } = await import("../server/lib/match");
+    const fs = featuresInView(camera, [
+      {
+        type: "node",
+        id: "1",
+        version: 1,
+        ...bar,
+        tags: { amenity: "recycling", brand: "Trilib'" },
+      },
+    ]);
+    expect(placeAtSign(0.25, fs)).toBeNull();
+  });
+});

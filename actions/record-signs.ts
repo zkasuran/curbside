@@ -10,7 +10,7 @@ import {
   featuresInView,
 } from "../server/lib/features.js";
 import { LIMITS } from "../server/lib/limits.js";
-import { matchReading } from "../server/lib/match.js";
+import { matchReading, placeAtSign } from "../server/lib/match.js";
 import { validateEvidenceBox } from "../server/lib/proposal-rules.js";
 import { normaliseValue } from "../server/lib/tags.js";
 
@@ -85,6 +85,8 @@ export default defineAction({
         const box = validateEvidenceBox(r.box ?? null);
         const x = box ? box[0] + box[2] / 2 : undefined;
         const m = matchReading({ text, x }, inView);
+        const atSign =
+          m.verdict === "not_on_map" ? placeAtSign(x, inView) : null;
         return {
           row: {
             id: crypto.randomUUID(),
@@ -100,7 +102,9 @@ export default defineAction({
             matchTarget: m.feature?.target ?? null,
             matchName: m.feature?.tags.name ?? null,
             similarity: m.similarity,
+            atSignTarget: atSign?.target ?? null,
           },
+          atSign,
           match: m,
         };
       });
@@ -109,7 +113,7 @@ export default defineAction({
         rows.map((r) => r.match.feature?.target).filter(Boolean),
       );
       return {
-        readings: rows.map(({ row, match }) => ({
+        readings: rows.map(({ row, match, atSign }) => ({
           readingId: row.id,
           read: row.text,
           legibility: row.legibility,
@@ -117,6 +121,16 @@ export default defineAction({
           details: JSON.parse(row.details),
           verdict: match.verdict,
           similarity: match.similarity,
+          ...(atSign
+            ? {
+                mappedPlaceAtSign: {
+                  target: atSign.target,
+                  name: atSign.tags.name ?? atSign.tags.brand,
+                  tags: atSign.tags,
+                },
+                note: "A mapped place stands where this sign is. The text may be a poster, a slogan or a cut-off sign; a new place here is not proposable. If the business really changed, tell the person.",
+              }
+            : {}),
           mapFeature: match.feature
             ? {
                 target: match.feature.target,

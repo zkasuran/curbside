@@ -11,8 +11,9 @@ scope: both
 
 1. Bring photos in with `import-street-photos` (the area's live map is cached at the same time).
    Prefer flat photos (fov under 180); 360 panoramas are lower detail.
-2. For one photo at a time: `inspect-photo`. Read every business sign exactly as written,
-   keeping spelling, accents and word order. Zoom (`zoom: [x, y, w, h]`) when text is small.
+2. For one photo at a time: `inspect-photo`. Read every business name sign (fascia, awning,
+   projecting sign) exactly as written. Skip posters, window adverts, slogans and product names.
+   Keep spelling, accents and word order. Zoom (`zoom: [x, y, w, h]`) when text is small.
    Mark a reading `partial` if any letter is a guess.
 3. `record-signs` with all readings and their boxes. Only now do you see map names.
 4. Draft from the verdicts:

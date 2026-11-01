@@ -133,6 +133,8 @@ export const signReadings = pgTable("sign_readings", {
   matchTarget: text("match_target"),
   matchName: text("match_name"),
   similarity: real("similarity"),
+  /** A mapped place standing where the sign is in the frame, whatever its name. */
+  atSignTarget: text("at_sign_target"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`now()`),

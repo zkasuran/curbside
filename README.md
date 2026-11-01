@@ -19,8 +19,8 @@
   <img alt="Built with Agent-Native" src="https://img.shields.io/badge/built%20with-Agent--Native%200.222-1c1917?style=flat-square">
   <img alt="OpenStreetMap" src="https://img.shields.io/badge/map-OpenStreetMap-7ebc6f?style=flat-square">
   <img alt="Panoramax" src="https://img.shields.io/badge/photos-Panoramax-f59e0b?style=flat-square">
-  <img alt="Tests" src="https://img.shields.io/badge/unit%20tests-58%20passing-2ea44f?style=flat-square">
-  <img alt="Sandbox e2e" src="https://img.shields.io/badge/live%20sandbox%20e2e-31%20checks-2ea44f?style=flat-square">
+  <img alt="Tests" src="https://img.shields.io/badge/unit%20tests-61%20passing-2ea44f?style=flat-square">
+  <img alt="Sandbox e2e" src="https://img.shields.io/badge/live%20sandbox%20e2e-32%20checks-2ea44f?style=flat-square">
   <img alt="Audit" src="https://img.shields.io/badge/npm%20audit-0%20high%20or%20critical-2ea44f?style=flat-square">
   <img alt="Licence" src="https://img.shields.io/badge/licence-SAND--1.0-555?style=flat-square">
 </p>
@@ -125,6 +125,7 @@ sequenceDiagram
 | The agent cannot approve or upload | `needsApproval` on both actions; e2e: a pending edit is never uploaded |
 | No rename without a matching reading | e2e: rename with no reading, with another sign's reading and with a misread all refused |
 | No duplicate places | e2e: "Bar Monaco" as a new point is refused, it already exists as "Monaco Bar" |
+| Posters are not places | e2e: text read on a mapped shopfront cannot become a new place |
 | Stale approvals do not overwrite | e2e: another mapper edits the hours after review, upload holds it as a conflict, their edit survives |
 | Merges keep others' work | e2e: after rebase and re-approval, the other mapper's phone number is still there |
 | Retries do not write twice | e2e: re-uploading an applied edit leaves the version unchanged |
@@ -134,8 +135,8 @@ sequenceDiagram
 The full table of attackers, defences and tests is in **[SECURITY.md](SECURITY.md)**. One command runs the release gate:
 
 ```bash
-./verify.sh          # lockfile, format, strict typecheck, Agent-Native doctor, 58 unit tests, audit, licence headers, secrets scan, build
-./verify.sh --e2e    # plus the 31-check live proof against the OSM sandbox (needs pnpm dev running)
+./verify.sh          # lockfile, format, strict typecheck, Agent-Native doctor, 61 unit tests, audit, licence headers, secrets scan, build
+./verify.sh --e2e    # plus the 32-check live proof against the OSM sandbox (needs pnpm dev running)
 ```
 
 Latest live proof: [`docs/evidence/`](docs/evidence/), with every action call, every sandbox read and the changeset ids.

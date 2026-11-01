@@ -122,3 +122,62 @@ export function blindFeature(f: FeatureInView) {
     distanceM: f.distanceM,
   };
 }
+
+/** How close, as a fraction of the frame, a mapped place must be to a sign to stand behind it. */
+export const AT_SIGN_X = 0.06;
+
+/**
+ * The named mapped place whose expected position in the frame is where the sign was read. A sign
+ * that matches no name but sits on a mapped place is a poster, a cut-off sign or a changed
+ * business, never simply a missing place.
+ */
+/** Street furniture and services that carry a brand but never a shopfront. */
+const STREET_AMENITIES = new Set([
+  "recycling",
+  "waste_basket",
+  "waste_disposal",
+  "parking",
+  "parking_entrance",
+  "bicycle_parking",
+  "bicycle_rental",
+  "motorcycle_parking",
+  "bench",
+  "toilets",
+  "drinking_water",
+  "atm",
+  "vending_machine",
+  "charging_station",
+  "post_box",
+  "telephone",
+  "fountain",
+  "taxi",
+  "car_sharing",
+  "bus_station",
+  "clock",
+]);
+
+function isShopfront(tags: Record<string, string>): boolean {
+  if (tags.shop || tags.craft || tags.office || tags.healthcare) return true;
+  return Boolean(tags.amenity && !STREET_AMENITIES.has(tags.amenity));
+}
+
+export function placeAtSign(
+  x: number | undefined,
+  features: FeatureInView[],
+): FeatureInView | null {
+  if (x === undefined) return null;
+  let best: FeatureInView | null = null;
+  for (const f of features) {
+    if (
+      f.expectedX === null ||
+      !(f.tags.name || f.tags.brand) ||
+      !isShopfront(f.tags) ||
+      f.distanceM > 40
+    )
+      continue;
+    const d = Math.abs(f.expectedX - x);
+    if (d <= AT_SIGN_X && (!best || d < Math.abs((best.expectedX ?? 0) - x)))
+      best = f;
+  }
+  return best;
+}

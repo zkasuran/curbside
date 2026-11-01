@@ -62,6 +62,11 @@ export async function assertReadingBacksEdit(
           statusCode: 409,
         },
       );
+    if (reading.atSignTarget)
+      fail(
+        `"${reading.text}" sits where ${reading.atSignTarget} is mapped in the photo. It is likely a poster, a slogan or a cut-off sign of that place, so it cannot back a new place.`,
+        { errorCode: "place_at_sign", statusCode: 409 },
+      );
     return;
   }
   if (reading.matchTarget !== edit.target || reading.verdict === "not_on_map")

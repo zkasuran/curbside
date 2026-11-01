@@ -461,6 +461,33 @@ check(
 );
 
 // 9. Interrupted upload: the write lands, then the process dies before it records the outcome.
+const poster = await act("record-signs", {
+  photoId: photo.id,
+  readings: [
+    {
+      text: "Happy Hour Special",
+      kind: "bar",
+      box: [0.2, 0.5, 0.08, 0.05],
+      legibility: "clear",
+    },
+  ],
+});
+const posterReading = poster.body.readings?.[0];
+const posterCreate = await act("propose-edit", {
+  photoId: photo.id,
+  kind: "create",
+  set: { amenity: "bar", name: "Happy Hour Special" },
+  evidence: "x x",
+  rationale: "x x",
+  confidence: 0.8,
+  readingId: posterReading?.readingId,
+});
+check(
+  "text read on a mapped shopfront (a poster) cannot become a new place",
+  posterReading?.mappedPlaceAtSign?.target === "node/6860044207" &&
+    /likely a poster/u.test(posterCreate.error),
+  posterCreate.error,
+);
 const floristName = `Curbside e2e florist ${Date.now().toString(36)}`;
 const floristRec = await act("record-signs", {
   photoId: photo.id,

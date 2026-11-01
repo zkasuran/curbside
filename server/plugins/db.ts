@@ -127,6 +127,11 @@ CREATE INDEX IF NOT EXISTS area_features_owner_idx ON area_features (owner_email
 CREATE INDEX IF NOT EXISTS sign_readings_owner_photo_idx ON sign_readings (owner_email, photo_id);
 ALTER TABLE proposals ADD COLUMN IF NOT EXISTS reading_id TEXT`,
     },
+    {
+      version: 5,
+      name: "curbside-reading-at-sign",
+      sql: `ALTER TABLE sign_readings ADD COLUMN IF NOT EXISTS at_sign_target TEXT`,
+    },
   ],
   { table: "curbside_migrations" },
 );
