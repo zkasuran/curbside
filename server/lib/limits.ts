@@ -38,7 +38,7 @@ export const LIMITS = {
   /** Longest edge of any picture handed to the agent, pixels. */
   agentImageMaxEdge: 1600,
   /** Zoomed crops returned with one inspection (plus the overview). */
-  autoCrops: 3,
+  autoCrops: 2,
   /** Bytes we will read from any JSON or XML API response. */
   responseMaxBytes: 4_000_000,
   fetchTimeoutMs: 20_000,

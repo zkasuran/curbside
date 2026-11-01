@@ -26,7 +26,7 @@ export function autoCropBoxes(
   expectedXs: number[],
   count: number = LIMITS.autoCrops,
 ): Box[] {
-  const width = 0.36;
+  const width = count <= 2 ? 0.5 : 0.36;
   const band: [number, number] = [0.22, 0.5];
   const xs = [...new Set(expectedXs.map((x) => Math.round(x * 20) / 20))].sort(
     (a, b) => a - b,
