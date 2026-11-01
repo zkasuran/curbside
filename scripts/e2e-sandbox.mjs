@@ -19,7 +19,7 @@ const outDir = process.argv[2] ? path.resolve(process.argv[2]) : null;
 const SANDBOX = "https://master.apis.dev.openstreetmap.org/api/0.6";
 const token = (() => {
   const env = fs.readFileSync(path.join(root, ".env"), "utf8");
-  return /^OSM_SANDBOX_TOKEN=(.+)$/mu.exec(env)?.[1]?.trim();
+  return /^OSM_SANDBOX_DEMO_TOKEN=(.+)$/mu.exec(env)?.[1]?.trim();
 })();
 const log = [];
 let failures = 0;

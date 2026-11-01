@@ -35,13 +35,15 @@ export const SANDBOX_TOKEN_KEY = "OSM_SANDBOX_TOKEN";
 
 /**
  * The OAuth 2 token uploads run under: the user's own sandbox token when they saved one in
- * Settings, otherwise the deployment's shared demo account (same key in the deploy env).
+ * Settings, otherwise the deployment's shared Curbside demo account on the sandbox.
  */
 export async function sandboxToken(): Promise<{ token: string; own: boolean }> {
   const found = await resolveSecretDetailed(SANDBOX_TOKEN_KEY);
   if (found.lookupFailed) throw new HttpError("The credential store did not answer. Try again.", 503, "");
-  if (!found.value) throw new OsmConfigError("No OSM sandbox token is configured.");
-  return { token: found.value, own: found.source !== "env" };
+  if (found.value && found.source !== "env") return { token: found.value, own: true };
+  const demo = process.env.OSM_SANDBOX_DEMO_TOKEN; // guard:allow-env-credential — app-owned shared demo account on the OSM dev sandbox, not a user credential
+  if (!demo) throw new OsmConfigError("No OSM sandbox token is configured.");
+  return { token: demo, own: false };
 }
 
 async function authHeaders(extra: Record<string, string> = {}): Promise<Record<string, string>> {
