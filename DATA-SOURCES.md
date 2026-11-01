@@ -15,9 +15,11 @@ meets that clause. Quotes are copied from the source on 2026-11-01.
   redistribute OSM data; it shows features to the reviewer and writes edits back to OSM's own
   sandbox, where contributions fall under the OSM contributor terms.
 - **API policy:** the OSMF API Usage Policy says "The editing API is provided in order to edit the
-  map data, not for read-only purposes or projects." Curbside therefore reads live data from
-  Overpass, never from the editing API. It uses the editing API only on the development sandbox,
-  only to write.
+  map data, not for read-only purposes or projects." Curbside reads live data from Overpass.
+  Only when every Overpass instance fails does it read the small area being surveyed (at most
+  400 m across) with one `map` call to the live API, the read an editor such as iD makes before
+  editing. The result is stored and shared, so the call is not repeated for a day. Curbside is an
+  editing tool, and it writes with the editing API only on the development sandbox.
 
 ## OpenStreetMap development sandbox (writes)
 
@@ -60,8 +62,9 @@ meets that clause. Quotes are copied from the source on 2026-11-01.
 ## Overpass API
 
 - **Instances:** overpass-api.de, maps.mail.ru, overpass.private.coffee (public community
-  services). Queries are small, identified by a `User-Agent` naming Curbside, cached per area
-  for 24 hours in the app's database and bounded by a time budget (`server/lib/limits.ts`).
+  services). Queries are small, identified by a `User-Agent` naming Curbside, stored per area
+  in the app's database and shared by all users (fresh for 24 hours, used up to 7 days old only
+  when Overpass is down), each bounded by a time budget (`server/lib/limits.ts`).
 
 ## Model provider
 

@@ -47,6 +47,8 @@ export const LIMITS = {
   overpassBudgetMs: 70_000,
   /** How long a fetched area of live features is reused before Overpass is asked again. */
   areaFeaturesMaxAgeMs: 24 * 3_600_000,
+  /** When Overpass is unavailable, an area this old is still used rather than failing. */
+  areaFeaturesStaleMs: 7 * 24 * 3_600_000,
   /** An upload claim older than this is treated as interrupted and reconciled. */
   staleUploadMs: 5 * 60_000,
   uploadsPerUserPerDay: 30,

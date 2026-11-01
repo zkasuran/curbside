@@ -1,0 +1,1420 @@
+{
+  "summary": {
+    "user": "e2e-mvx7la0n@curbside.test",
+    "server": "http://localhost:8082",
+    "sandbox": "https://master.apis.dev.openstreetmap.org/api/0.6",
+    "failures": 0,
+    "checks": 31,
+    "changesets": [
+      "716675",
+      "716672",
+      "716670"
+    ]
+  },
+  "log": [
+    {
+      "at": "2026-11-01T02:27:56.606Z",
+      "action": "import-street-photos",
+      "input": {
+        "lat": 48.85454,
+        "lon": 2.37303,
+        "radiusM": 40,
+        "limit": 8
+      },
+      "status": 200,
+      "result": "{\"imported\":5,\"mapReady\":true,\"found\":24,\"photos\":[{\"id\":\"6ad8d0b5-e9bc-4a5d-8327-acb0db11725a\",\"lat\":48.854668,\"lon\":2.3728576,\"azimuth\":326,\"fov\":95,\"capturedAt\":\"2025-06-28T06:28:50.655Z\",\"license\":\"etalab-2.0\",\"attribution\":\"immergis, Panoramax, etalab-2.0\",\"thumbUrl\":\"https://panoramax.ign.fr/api/pictures/4022bdaa-09b3-4231-9369-eff0c62d02d4/thumb.jpg\",\"imageUrl\":\"https://panoramax.ign.fr/api/pictures/4022bdaa-09b3-4231-9369-eff0c62d02d4/sd.jpg\",\"pageUrl\":\"https://api.panoramax.xyz/#focus=pic&pic=4022bdaa-09b3-4231-9369-eff0c62d02d4\",\"inspected\":false},{\"id\":\"73c7ad19-cb1c-404c-ae91-7e386308dabd\",\"lat\":48.854427,\"lon\":2.3731964,\"azimuth\":313,\"fov\":360,\"capturedAt\":\"2025-05-07T09:31:37.649Z\",\"license\":\"etalab-2.0\",\"attribution\":\"immergis, Panoramax, etalab-2.0\",\"thumbUrl\":\"https://panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net/derivates/50/a7/7a/03/8723-4a4c-84b8-09c550cc4984/thumb.jpg\",\"imageUrl\":\"https://panoramax-storage-public-fast.s3.gra.perf.cloud.ovh.net/derivates/50/a7/7a/03/8723-4a4c-84b8-09c550cc4984/sd.jpg\",\"pageUrl\":\"https://api.panoramax.xyz/#focus=pic&pic=50a77a03-8723-4a4c-84b8-09c550cc4984\",\"inspected\":false},{\"id\":\"85371b81-41a7-4e77-b3a7-00c3bbe588aa\",\"lat\":48.854538,\"lon\":2.3730333,\"azimuth\":317,\"fov\":95,\"capturedAt\":\"2025-06-28T06:28:46.012Z\",\"license\":\"etalab-2.0\",\"attribution\":\"immergis, Panoramax, etalab-2.0\",\"thumbUrl\":\"https://panoramax.ign.fr/api/pictures/b75a752d-ec6d-4c60-a780-9edb8a611884/thumb.jpg\",\"imageUrl\":\"https://panoramax.ign.f…"
+    },
+    {
+      "at": "2026-11-01T02:27:56.607Z",
+      "check": "import finds open street photos",
+      "pass": true,
+      "detail": "5 photos, map cached"
+    },
+    {
+      "at": "2026-11-01T02:27:56.608Z",
+      "check": "a flat photo facing the bar is in the survey",
+      "pass": true,
+      "detail": "85371b81-41a7-4e77-b3a7-00c3bbe588aa"
+    },
+    {
+      "at": "2026-11-01T02:28:00.755Z",
+      "action": "inspect-photo",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "includeImage": true
+      },
+      "status": 200,
+      "result": "{\"photo\":{\"id\":\"85371b81-41a7-4e77-b3a7-00c3bbe588aa\",\"lat\":48.854538,\"lon\":2.3730333,\"azimuth\":317,\"fov\":95,\"capturedAt\":\"2025-06-28T06:28:46.012Z\",\"license\":\"etalab-2.0\",\"attribution\":\"immergis, Panoramax, etalab-2.0\",\"thumbUrl\":\"https://panoramax.ign.fr/api/pictures/b75a752d-ec6d-4c60-a780-9edb8a611884/thumb.jpg\",\"imageUrl\":\"https://panoramax.ign.fr/api/pictures/b75a752d-ec6d-4c60-a780-9edb8a611884/sd.jpg\",\"pageUrl\":\"https://api.panoramax.xyz/#focus=pic&pic=b75a752d-ec6d-4c60-a780-9edb8a611884\",\"inspected\":false,\"ageDays\":491},\"mappedFeaturesInView\":[{\"ref\":\"node/2190097104\",\"kind\":\"amenity=bicycle_parking\",\"expectedX\":0.28,\"distanceM\":10,\"openProposals\":0},{\"ref\":\"node/6860044208\",\"kind\":\"amenity=motorcycle_parking\",\"expectedX\":0.58,\"distanceM\":17,\"openProposals\":0},{\"ref\":\"node/6860044207\",\"kind\":\"amenity=bar\",\"expectedX\":0.24,\"distanceM\":20,\"openProposals\":0},{\"ref\":\"node/6860044209\",\"kind\":\"amenity=motorcycle_parking\",\"expectedX\":0.42,\"distanceM\":20,\"openProposals\":0},{\"ref\":\"node/10949075531\",\"kind\":\"amenity=bicycle_parking\",\"expectedX\":0.59,\"distanceM\":23,\"openProposals\":0},{\"ref\":\"node/10949075532\",\"kind\":\"amenity=bicycle_parking\",\"expectedX\":0.46,\"distanceM\":25,\"openProposals\":0},{\"ref\":\"node/2914625161\",\"kind\":\"amenity=restaurant\",\"expectedX\":0.3,\"distanceM\":29,\"openProposals\":0},{\"ref\":\"node/7171355203\",\"kind\":\"shop=perfumery\",\"expectedX\":1,\"distanceM\":30,\"openProposals\":0},{\"ref\":\"node/9540577417\",\"kind\":\"shop=hairdresser\",\"expectedX\":0.25,\"distanceM\":37,\"openPr…"
+    },
+    {
+      "at": "2026-11-01T02:28:00.755Z",
+      "check": "inspect returns the photo and crops",
+      "pass": true,
+      "detail": "3 images"
+    },
+    {
+      "at": "2026-11-01T02:28:00.757Z",
+      "check": "inspect hides map names from the agent",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:00.839Z",
+      "action": "record-signs",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "readings": [
+          {
+            "text": "Bar Monaco",
+            "kind": "bar",
+            "box": [
+              0.21,
+              0.41,
+              0.08,
+              0.07
+            ],
+            "legibility": "clear"
+          },
+          {
+            "text": "SAKURA",
+            "kind": "restaurant",
+            "box": [
+              0.33,
+              0.48,
+              0.09,
+              0.06
+            ],
+            "legibility": "clear"
+          }
+        ]
+      },
+      "status": 200,
+      "result": "{\"readings\":[{\"readingId\":\"8e22ca64-bd05-4e9e-a574-38e6a3bddc55\",\"read\":\"Bar Monaco\",\"legibility\":\"clear\",\"box\":[0.21,0.41,0.08,0.07],\"details\":{},\"verdict\":\"word_order\",\"similarity\":1,\"mapFeature\":{\"target\":\"node/6860044207\",\"version\":5,\"tags\":{\"addr:city\":\"Paris\",\"addr:housenumber\":\"41\",\"addr:postcode\":\"75011\",\"addr:street\":\"Passage Thiéré\",\"amenity\":\"bar\",\"contact:city\":\"Paris 11eme Arrondissement\",\"contact:housenumber\":\"41\",\"contact:phone\":\"+33 7 58 57 82 72\",\"contact:postcode\":\"75011\",\"contact:street\":\"Pass. Thiéré\",\"name\":\"Monaco Bar\",\"opening_hours\":\"Mo-Su 00:00-02:00, 14:30-23:59\",\"ref:FR:SIRET\":\"92157690600017\"}}},{\"readingId\":\"93ac4379-a22c-4617-bff7-4ad14ac5a584\",\"read\":\"SAKURA\",\"legibility\":\"clear\",\"box\":[0.33,0.48,0.09,0.06],\"details\":{},\"verdict\":\"same\",\"similarity\":1,\"mapFeature\":{\"target\":\"node/2914625161\",\"version\":3,\"tags\":{\"amenity\":\"restaurant\",\"check_date\":\"2026-08-29\",\"cuisine\":\"japanese\",\"name\":\"Sakura\"}}}],\"notRead\":[{\"target\":\"node/2190097104\",\"name\":null,\"expectedX\":0.28,\"distanceM\":10},{\"target\":\"node/6860044208\",\"name\":null,\"expectedX\":0.58,\"distanceM\":17},{\"target\":\"node/6860044209\",\"name\":null,\"expectedX\":0.42,\"distanceM\":20},{\"target\":\"node/10949075531\",\"name\":null,\"expectedX\":0.59,\"distanceM\":23},{\"target\":\"node/10949075532\",\"name\":null,\"expectedX\":0.46,\"distanceM\":25},{\"target\":\"node/7171355203\",\"name\":\"Marionnaud\",\"expectedX\":1,\"distanceM\":30},{\"target\":\"node/9540577417\",\"name\":\"L'Atelier Pierre Jacques\",\"expectedX\":0.25,\"distanceM\":37},{\"tar…"
+    },
+    {
+      "at": "2026-11-01T02:28:00.839Z",
+      "check": "Bar Monaco matches node/6860044207 as a word-order difference",
+      "pass": true,
+      "detail": "word_order"
+    },
+    {
+      "at": "2026-11-01T02:28:00.840Z",
+      "check": "SAKURA matches the mapped restaurant as the same name",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:00.891Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "create",
+        "set": {
+          "amenity": "bar",
+          "name": "Bar Monaco"
+        },
+        "evidence": "Awning reads Bar Monaco",
+        "rationale": "test",
+        "confidence": 0.6,
+        "readingId": "8e22ca64-bd05-4e9e-a574-38e6a3bddc55"
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "\"Bar Monaco\" matched node/6860044207 on the map; propose a modify on it instead."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:00.891Z",
+      "check": "a new point for a sign that matched a mapped place is refused",
+      "pass": true,
+      "detail": "\"Bar Monaco\" matched node/6860044207 on the map; propose a modify on it instead."
+    },
+    {
+      "at": "2026-11-01T02:28:00.919Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "set": {
+          "name": "Le Voltaire"
+        },
+        "evidence": "x x",
+        "rationale": "x x",
+        "confidence": 0.9
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "A name or confirmation edit needs the readingId of the sign it rests on."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:00.920Z",
+      "check": "a rename with no sign reading behind it is refused",
+      "pass": true,
+      "detail": "A name or confirmation edit needs the readingId of the sign it rests on."
+    },
+    {
+      "at": "2026-11-01T02:28:00.951Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "set": {
+          "name": "Sakura"
+        },
+        "evidence": "x x",
+        "rationale": "x x",
+        "confidence": 0.9,
+        "readingId": "93ac4379-a22c-4617-bff7-4ad14ac5a584"
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "The reading \"SAKURA\" did not match node/6860044207 (verdict same). Do not rename a different place; if the sign is a new business, propose kind create."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:00.951Z",
+      "check": "renaming a place with another sign's reading is refused",
+      "pass": true,
+      "detail": "The reading \"SAKURA\" did not match node/6860044207 (verdict same). Do not rename a different place; if the sign is a new business, propose kind create."
+    },
+    {
+      "at": "2026-11-01T02:28:00.994Z",
+      "action": "record-signs",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "readings": [
+          {
+            "text": "SAMIRA",
+            "kind": "restaurant",
+            "box": [
+              0.36,
+              0.44,
+              0.08,
+              0.04
+            ],
+            "legibility": "clear"
+          }
+        ]
+      },
+      "status": 200,
+      "result": "{\"readings\":[{\"readingId\":\"f276f0f3-9734-4865-85bf-84ef5f66ce32\",\"read\":\"SAMIRA\",\"legibility\":\"clear\",\"box\":[0.36,0.44,0.08,0.04],\"details\":{},\"verdict\":\"differs\",\"similarity\":0.67,\"mapFeature\":{\"target\":\"node/2914625161\",\"version\":3,\"tags\":{\"amenity\":\"restaurant\",\"check_date\":\"2026-08-29\",\"cuisine\":\"japanese\",\"name\":\"Sakura\"}}}],\"notRead\":[{\"target\":\"node/2190097104\",\"name\":null,\"expectedX\":0.28,\"distanceM\":10},{\"target\":\"node/6860044208\",\"name\":null,\"expectedX\":0.58,\"distanceM\":17},{\"target\":\"node/6860044207\",\"name\":\"Monaco Bar\",\"expectedX\":0.24,\"distanceM\":20},{\"target\":\"node/6860044209\",\"name\":null,\"expectedX\":0.42,\"distanceM\":20},{\"target\":\"node/10949075531\",\"name\":null,\"expectedX\":0.59,\"distanceM\":23},{\"target\":\"node/10949075532\",\"name\":null,\"expectedX\":0.46,\"distanceM\":25},{\"target\":\"node/7171355203\",\"name\":\"Marionnaud\",\"expectedX\":1,\"distanceM\":30},{\"target\":\"node/9540577417\",\"name\":\"L'Atelier Pierre Jacques\",\"expectedX\":0.25,\"distanceM\":37},{\"target\":\"node/4745203122\",\"name\":\"Église Évangélique\",\"expectedX\":0.14,\"distanceM\":39},{\"target\":\"node/12144366348\",\"name\":null,\"expectedX\":0.8,\"distanceM\":39},{\"target\":\"node/1369995572\",\"name\":null,\"expectedX\":0.76,\"distanceM\":41},{\"target\":\"node/12768618816\",\"name\":null,\"expectedX\":0.85,\"distanceM\":42},{\"target\":\"node/12353636527\",\"name\":\"Le biscuit Alain Ducasse\",\"expectedX\":0.06,\"distanceM\":46},{\"target\":\"node/4248814448\",\"name\":\"O'Tacos\",\"expectedX\":0.43,\"distanceM\":48},{\"target\":\"node/4004690169\",\"name\":\"La Clinique du ra…"
+    },
+    {
+      "at": "2026-11-01T02:28:01.060Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "2914625161",
+        "set": {
+          "name": "SAMIRA"
+        },
+        "evidence": "x x",
+        "rationale": "x x",
+        "confidence": 0.9,
+        "readingId": "f276f0f3-9734-4865-85bf-84ef5f66ce32"
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "\"SAMIRA\" is too different from the map's \"Sakura\" to be a spelling fix. Zoom in on the sign and record it again; a different business is a new place, not a rename."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:01.060Z",
+      "check": "a misread too far from the mapped name cannot rename it",
+      "pass": true,
+      "detail": "\"SAMIRA\" is too different from the map's \"Sakura\" to be a spelling fix. Zoom in on the sign and record it again; a different business is a new place, not a rename."
+    },
+    {
+      "at": "2026-11-01T02:28:01.113Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "10658448611",
+        "set": {
+          "opening_hours": "Mo-Su 08:00-20:00"
+        },
+        "evidence": "x x",
+        "rationale": "x x",
+        "confidence": 0.5
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "node/10658448611 is 50 m away and outside what this photo can see."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:01.113Z",
+      "check": "editing a feature outside the photo's view is refused",
+      "pass": true,
+      "detail": "node/10658448611 is 50 m away and outside what this photo can see."
+    },
+    {
+      "at": "2026-11-01T02:28:01.142Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "set": {
+          "created_by": "me"
+        },
+        "evidence": "x x",
+        "rationale": "x x",
+        "confidence": 0.5
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "Tag key \"created_by\" cannot be changed from a street photo."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:01.142Z",
+      "check": "reserved tags are refused",
+      "pass": true,
+      "detail": "Tag key \"created_by\" cannot be changed from a street photo."
+    },
+    {
+      "at": "2026-11-01T02:28:01.207Z",
+      "action": "upload-approved",
+      "input": {},
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "Nothing is approved and waiting to upload."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:01.207Z",
+      "check": "upload with nothing approved writes nothing",
+      "pass": true,
+      "detail": "Nothing is approved and waiting to upload."
+    },
+    {
+      "at": "2026-11-01T02:28:01.266Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "set": {
+          "name": "Bar Monaco"
+        },
+        "evidence": "The awning reads \"Bar Monaco\".",
+        "rationale": "Sign and map disagree on the word order of the name.",
+        "confidence": 0.85,
+        "readingId": "8e22ca64-bd05-4e9e-a574-38e6a3bddc55"
+      },
+      "status": 200,
+      "result": {
+        "id": "9b746939-87a4-4615-8fbe-2dc4304f7045",
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "target": "node/6860044207",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "liveVersion": 5,
+        "title": "Bar Monaco (bar)",
+        "lat": 48.854607,
+        "lon": 2.3727863,
+        "tagsBefore": {
+          "addr:city": "Paris",
+          "addr:housenumber": "41",
+          "addr:postcode": "75011",
+          "addr:street": "Passage Thiéré",
+          "amenity": "bar",
+          "contact:city": "Paris 11eme Arrondissement",
+          "contact:housenumber": "41",
+          "contact:phone": "+33 7 58 57 82 72",
+          "contact:postcode": "75011",
+          "contact:street": "Pass. Thiéré",
+          "name": "Monaco Bar",
+          "opening_hours": "Mo-Su 00:00-02:00, 14:30-23:59",
+          "ref:FR:SIRET": "92157690600017"
+        },
+        "set": {
+          "name": "Bar Monaco"
+        },
+        "remove": [],
+        "evidence": "The awning reads \"Bar Monaco\".",
+        "evidenceBox": [
+          0.21,
+          0.41,
+          0.08,
+          0.07
+        ],
+        "rationale": "Sign and map disagree on the word order of the name.",
+        "confidence": 0.85,
+        "status": "pending",
+        "reviewNote": null,
+        "editedByReviewer": false,
+        "sandbox": null,
+        "resultVersion": null,
+        "changesetId": null,
+        "error": null,
+        "createdAt": "2026-11-01T02:28:01.247Z",
+        "updatedAt": "2026-11-01T02:28:01.247Z",
+        "message": "Drafted \"Bar Monaco (bar)\". It waits for a person to review it."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:01.266Z",
+      "check": "rename drafted as pending with the reading's box as evidence",
+      "pass": true,
+      "detail": "9b746939-87a4-4615-8fbe-2dc4304f7045"
+    },
+    {
+      "at": "2026-11-01T02:28:01.316Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "set": {
+          "name": "Bar Monaco"
+        },
+        "evidence": "dup dup",
+        "rationale": "dup dup",
+        "confidence": 0.85,
+        "readingId": "8e22ca64-bd05-4e9e-a574-38e6a3bddc55"
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "Proposal 9b746939-87a4-4615-8fbe-2dc4304f7045 already targets node/6860044207. Update it instead."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:01.316Z",
+      "check": "a second open proposal on the same element is refused",
+      "pass": true,
+      "detail": "Proposal 9b746939-87a4-4615-8fbe-2dc4304f7045 already targets node/6860044207. Update it instead."
+    },
+    {
+      "at": "2026-11-01T02:28:01.345Z",
+      "action": "upload-approved",
+      "input": {},
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "Nothing is approved and waiting to upload."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:01.345Z",
+      "check": "a pending (unapproved) edit is never uploaded",
+      "pass": true,
+      "detail": "Nothing is approved and waiting to upload."
+    },
+    {
+      "at": "2026-11-01T02:28:01.397Z",
+      "action": "review-proposal",
+      "input": {
+        "ids": [
+          "9b746939-87a4-4615-8fbe-2dc4304f7045"
+        ],
+        "decision": "approve"
+      },
+      "status": 200,
+      "result": {
+        "updated": [
+          {
+            "id": "9b746939-87a4-4615-8fbe-2dc4304f7045",
+            "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+            "kind": "modify",
+            "target": "node/6860044207",
+            "osmType": "node",
+            "osmId": "6860044207",
+            "liveVersion": 5,
+            "title": "Bar Monaco (bar)",
+            "lat": 48.854607,
+            "lon": 2.3727863,
+            "tagsBefore": {
+              "addr:city": "Paris",
+              "addr:housenumber": "41",
+              "addr:postcode": "75011",
+              "addr:street": "Passage Thiéré",
+              "amenity": "bar",
+              "contact:city": "Paris 11eme Arrondissement",
+              "contact:housenumber": "41",
+              "contact:phone": "+33 7 58 57 82 72",
+              "contact:postcode": "75011",
+              "contact:street": "Pass. Thiéré",
+              "name": "Monaco Bar",
+              "opening_hours": "Mo-Su 00:00-02:00, 14:30-23:59",
+              "ref:FR:SIRET": "92157690600017"
+            },
+            "set": {
+              "name": "Bar Monaco"
+            },
+            "remove": [],
+            "evidence": "The awning reads \"Bar Monaco\".",
+            "evidenceBox": [
+              0.21,
+              0.41,
+              0.08,
+              0.07
+            ],
+            "rationale": "Sign and map disagree on the word order of the name.",
+            "confidence": 0.85,
+            "status": "approved",
+            "reviewNote": null,
+            "editedByReviewer": false,
+            "sandbox": null,
+            "resultVersion": null,
+            "changesetId": null,
+            "error": null,
+            "createdAt": "2026-11-01T02:28:01.247Z",
+            "updatedAt": "2026-11-01T02:28:01.376Z"
+          }
+        ],
+        "skipped": [],
+        "message": "1 approved."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:03.443Z",
+      "action": "upload-approved",
+      "input": {},
+      "status": 200,
+      "result": {
+        "changesetId": "716670",
+        "changesetUrl": "https://master.apis.dev.openstreetmap.org/changeset/716670",
+        "comment": "Update 1 place from street-level photos: Bar Monaco (bar)",
+        "outcomes": [
+          {
+            "proposalId": "9b746939-87a4-4615-8fbe-2dc4304f7045",
+            "title": "Bar Monaco (bar)",
+            "outcome": "uploaded",
+            "sandbox": "node/4365733997",
+            "sandboxUrl": "https://master.apis.dev.openstreetmap.org/node/4365733997",
+            "version": 2,
+            "detail": "Written and read back in changeset 716670."
+          }
+        ],
+        "reconciled": [],
+        "verified": true,
+        "message": "Changeset 716670: 1 uploaded and verified."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:03.443Z",
+      "check": "upload writes one changeset and verifies by read-back",
+      "pass": true,
+      "detail": "Changeset 716670: 1 uploaded and verified."
+    },
+    {
+      "at": "2026-11-01T02:28:03.981Z",
+      "check": "stranger read of the sandbox shows the new name",
+      "pass": true,
+      "detail": "node/4365733997 v2"
+    },
+    {
+      "at": "2026-11-01T02:28:04.161Z",
+      "check": "changeset is closed and carries source and AI note",
+      "pass": true,
+      "detail": "716670"
+    },
+    {
+      "at": "2026-11-01T02:28:04.208Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "set": {
+          "name": "Bar Monaco"
+        },
+        "evidence": "The awning reads \"Bar Monaco\".",
+        "rationale": "Re-drafted from the live map, which still has the old name.",
+        "confidence": 0.85,
+        "readingId": "8e22ca64-bd05-4e9e-a574-38e6a3bddc55"
+      },
+      "status": 200,
+      "result": {
+        "id": "fc284212-63b6-4b6c-877e-9b8ba4cf5931",
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "target": "node/6860044207",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "liveVersion": 5,
+        "title": "Bar Monaco (bar)",
+        "lat": 48.854607,
+        "lon": 2.3727863,
+        "tagsBefore": {
+          "addr:city": "Paris",
+          "addr:housenumber": "41",
+          "addr:postcode": "75011",
+          "addr:street": "Passage Thiéré",
+          "amenity": "bar",
+          "contact:city": "Paris 11eme Arrondissement",
+          "contact:housenumber": "41",
+          "contact:phone": "+33 7 58 57 82 72",
+          "contact:postcode": "75011",
+          "contact:street": "Pass. Thiéré",
+          "name": "Monaco Bar",
+          "opening_hours": "Mo-Su 00:00-02:00, 14:30-23:59",
+          "ref:FR:SIRET": "92157690600017"
+        },
+        "set": {
+          "name": "Bar Monaco"
+        },
+        "remove": [],
+        "evidence": "The awning reads \"Bar Monaco\".",
+        "evidenceBox": [
+          0.21,
+          0.41,
+          0.08,
+          0.07
+        ],
+        "rationale": "Re-drafted from the live map, which still has the old name.",
+        "confidence": 0.85,
+        "status": "pending",
+        "reviewNote": null,
+        "editedByReviewer": false,
+        "sandbox": null,
+        "resultVersion": null,
+        "changesetId": null,
+        "error": null,
+        "createdAt": "2026-11-01T02:28:04.187Z",
+        "updatedAt": "2026-11-01T02:28:04.187Z",
+        "message": "Drafted \"Bar Monaco (bar)\". It waits for a person to review it."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:04.238Z",
+      "action": "review-proposal",
+      "input": {
+        "ids": [
+          "fc284212-63b6-4b6c-877e-9b8ba4cf5931"
+        ],
+        "decision": "approve"
+      },
+      "status": 200,
+      "result": {
+        "updated": [
+          {
+            "id": "fc284212-63b6-4b6c-877e-9b8ba4cf5931",
+            "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+            "kind": "modify",
+            "target": "node/6860044207",
+            "osmType": "node",
+            "osmId": "6860044207",
+            "liveVersion": 5,
+            "title": "Bar Monaco (bar)",
+            "lat": 48.854607,
+            "lon": 2.3727863,
+            "tagsBefore": {
+              "addr:city": "Paris",
+              "addr:housenumber": "41",
+              "addr:postcode": "75011",
+              "addr:street": "Passage Thiéré",
+              "amenity": "bar",
+              "contact:city": "Paris 11eme Arrondissement",
+              "contact:housenumber": "41",
+              "contact:phone": "+33 7 58 57 82 72",
+              "contact:postcode": "75011",
+              "contact:street": "Pass. Thiéré",
+              "name": "Monaco Bar",
+              "opening_hours": "Mo-Su 00:00-02:00, 14:30-23:59",
+              "ref:FR:SIRET": "92157690600017"
+            },
+            "set": {
+              "name": "Bar Monaco"
+            },
+            "remove": [],
+            "evidence": "The awning reads \"Bar Monaco\".",
+            "evidenceBox": [
+              0.21,
+              0.41,
+              0.08,
+              0.07
+            ],
+            "rationale": "Re-drafted from the live map, which still has the old name.",
+            "confidence": 0.85,
+            "status": "approved",
+            "reviewNote": null,
+            "editedByReviewer": false,
+            "sandbox": null,
+            "resultVersion": null,
+            "changesetId": null,
+            "error": null,
+            "createdAt": "2026-11-01T02:28:04.187Z",
+            "updatedAt": "2026-11-01T02:28:04.223Z"
+          }
+        ],
+        "skipped": [],
+        "message": "1 approved."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:04.634Z",
+      "action": "upload-approved",
+      "input": {},
+      "status": 200,
+      "result": {
+        "changesetId": null,
+        "changesetUrl": null,
+        "comment": "Update 0 places from street-level photos: ",
+        "outcomes": [
+          {
+            "proposalId": "fc284212-63b6-4b6c-877e-9b8ba4cf5931",
+            "title": "Bar Monaco (bar)",
+            "outcome": "already_applied",
+            "sandbox": "node/4365733997",
+            "sandboxUrl": "https://master.apis.dev.openstreetmap.org/node/4365733997",
+            "version": 2,
+            "detail": "The map already matched. Nothing written."
+          }
+        ],
+        "reconciled": [],
+        "verified": true,
+        "message": "Nothing written."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:04.809Z",
+      "check": "re-uploading an already-applied edit writes nothing",
+      "pass": true,
+      "detail": "still v2"
+    },
+    {
+      "at": "2026-11-01T02:28:04.864Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "set": {
+          "opening_hours": "Mo-Su 14:30-02:00"
+        },
+        "evidence": "Hours sign on the door (fixture).",
+        "rationale": "Simplify hours to what the door shows.",
+        "confidence": 0.7
+      },
+      "status": 200,
+      "result": {
+        "id": "4e796fa6-84e8-44fc-ad7a-a76dad980e96",
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "target": "node/6860044207",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "liveVersion": 5,
+        "title": "Monaco Bar (bar)",
+        "lat": 48.854607,
+        "lon": 2.3727863,
+        "tagsBefore": {
+          "addr:city": "Paris",
+          "addr:housenumber": "41",
+          "addr:postcode": "75011",
+          "addr:street": "Passage Thiéré",
+          "amenity": "bar",
+          "contact:city": "Paris 11eme Arrondissement",
+          "contact:housenumber": "41",
+          "contact:phone": "+33 7 58 57 82 72",
+          "contact:postcode": "75011",
+          "contact:street": "Pass. Thiéré",
+          "name": "Monaco Bar",
+          "opening_hours": "Mo-Su 00:00-02:00, 14:30-23:59",
+          "ref:FR:SIRET": "92157690600017"
+        },
+        "set": {
+          "opening_hours": "Mo-Su 14:30-02:00"
+        },
+        "remove": [],
+        "evidence": "Hours sign on the door (fixture).",
+        "evidenceBox": null,
+        "rationale": "Simplify hours to what the door shows.",
+        "confidence": 0.7,
+        "status": "pending",
+        "reviewNote": null,
+        "editedByReviewer": false,
+        "sandbox": null,
+        "resultVersion": null,
+        "changesetId": null,
+        "error": null,
+        "createdAt": "2026-11-01T02:28:04.847Z",
+        "updatedAt": "2026-11-01T02:28:04.847Z",
+        "message": "Drafted \"Monaco Bar (bar)\". It waits for a person to review it."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:04.892Z",
+      "action": "review-proposal",
+      "input": {
+        "ids": [
+          "4e796fa6-84e8-44fc-ad7a-a76dad980e96"
+        ],
+        "decision": "approve"
+      },
+      "status": 200,
+      "result": {
+        "updated": [
+          {
+            "id": "4e796fa6-84e8-44fc-ad7a-a76dad980e96",
+            "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+            "kind": "modify",
+            "target": "node/6860044207",
+            "osmType": "node",
+            "osmId": "6860044207",
+            "liveVersion": 5,
+            "title": "Monaco Bar (bar)",
+            "lat": 48.854607,
+            "lon": 2.3727863,
+            "tagsBefore": {
+              "addr:city": "Paris",
+              "addr:housenumber": "41",
+              "addr:postcode": "75011",
+              "addr:street": "Passage Thiéré",
+              "amenity": "bar",
+              "contact:city": "Paris 11eme Arrondissement",
+              "contact:housenumber": "41",
+              "contact:phone": "+33 7 58 57 82 72",
+              "contact:postcode": "75011",
+              "contact:street": "Pass. Thiéré",
+              "name": "Monaco Bar",
+              "opening_hours": "Mo-Su 00:00-02:00, 14:30-23:59",
+              "ref:FR:SIRET": "92157690600017"
+            },
+            "set": {
+              "opening_hours": "Mo-Su 14:30-02:00"
+            },
+            "remove": [],
+            "evidence": "Hours sign on the door (fixture).",
+            "evidenceBox": null,
+            "rationale": "Simplify hours to what the door shows.",
+            "confidence": 0.7,
+            "status": "approved",
+            "reviewNote": null,
+            "editedByReviewer": false,
+            "sandbox": null,
+            "resultVersion": null,
+            "changesetId": null,
+            "error": null,
+            "createdAt": "2026-11-01T02:28:04.847Z",
+            "updatedAt": "2026-11-01T02:28:04.876Z"
+          }
+        ],
+        "skipped": [],
+        "message": "1 approved."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:06.116Z",
+      "concurrentEdit": {
+        "node": 4365733997,
+        "change": {
+          "opening_hours": "Mo-Fr 16:00-02:00",
+          "phone": "+33 1 43 00 00 00"
+        },
+        "changeset": "716671",
+        "status": 200
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:06.675Z",
+      "action": "upload-approved",
+      "input": {},
+      "status": 200,
+      "result": {
+        "changesetId": null,
+        "changesetUrl": null,
+        "comment": "Update 0 places from street-level photos: ",
+        "outcomes": [
+          {
+            "proposalId": "4e796fa6-84e8-44fc-ad7a-a76dad980e96",
+            "title": "Monaco Bar (bar)",
+            "outcome": "conflict",
+            "sandbox": "node/4365733997",
+            "sandboxUrl": "https://master.apis.dev.openstreetmap.org/node/4365733997",
+            "version": 3,
+            "detail": "Stale approval: opening_hours changed since review.",
+            "conflicts": [
+              {
+                "key": "opening_hours",
+                "approvedFrom": "Mo-Su 00:00-02:00, 14:30-23:59",
+                "nowIs": "Mo-Fr 16:00-02:00"
+              }
+            ]
+          }
+        ],
+        "reconciled": [],
+        "verified": true,
+        "message": "Nothing written; 1 conflicts need a rebase."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:06.846Z",
+      "check": "a key changed after approval is held back as a conflict",
+      "pass": true,
+      "detail": "Stale approval: opening_hours changed since review."
+    },
+    {
+      "at": "2026-11-01T02:28:06.846Z",
+      "check": "the conflicting upload left the other mapper's edit untouched",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:07.084Z",
+      "action": "update-proposal",
+      "input": {
+        "id": "4e796fa6-84e8-44fc-ad7a-a76dad980e96",
+        "rebase": true
+      },
+      "status": 200,
+      "result": {
+        "id": "4e796fa6-84e8-44fc-ad7a-a76dad980e96",
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "target": "node/6860044207",
+        "osmType": "node",
+        "osmId": "6860044207",
+        "liveVersion": 5,
+        "title": "Bar Monaco (bar)",
+        "lat": 48.854607,
+        "lon": 2.3727863,
+        "tagsBefore": {
+          "addr:city": "Paris",
+          "addr:housenumber": "41",
+          "addr:postcode": "75011",
+          "addr:street": "Passage Thiéré",
+          "amenity": "bar",
+          "contact:city": "Paris 11eme Arrondissement",
+          "contact:housenumber": "41",
+          "contact:phone": "+33 7 58 57 82 72",
+          "contact:postcode": "75011",
+          "contact:street": "Pass. Thiéré",
+          "name": "Bar Monaco",
+          "opening_hours": "Mo-Fr 16:00-02:00",
+          "phone": "+33 1 43 00 00 00",
+          "ref:FR:SIRET": "92157690600017"
+        },
+        "set": {
+          "opening_hours": "Mo-Su 14:30-02:00"
+        },
+        "remove": [],
+        "evidence": "Hours sign on the door (fixture).",
+        "evidenceBox": null,
+        "rationale": "Simplify hours to what the door shows.",
+        "confidence": 0.7,
+        "status": "pending",
+        "reviewNote": null,
+        "editedByReviewer": true,
+        "sandbox": "node/4365733997",
+        "resultVersion": null,
+        "changesetId": null,
+        "error": null,
+        "createdAt": "2026-11-01T02:28:04.847Z",
+        "updatedAt": "2026-11-01T02:28:07.070Z",
+        "message": "Saved. It is back in the queue for approval."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:07.084Z",
+      "check": "rebase sends the edit back to a person",
+      "pass": true,
+      "detail": "pending"
+    },
+    {
+      "at": "2026-11-01T02:28:07.108Z",
+      "action": "review-proposal",
+      "input": {
+        "ids": [
+          "4e796fa6-84e8-44fc-ad7a-a76dad980e96"
+        ],
+        "decision": "approve"
+      },
+      "status": 200,
+      "result": {
+        "updated": [
+          {
+            "id": "4e796fa6-84e8-44fc-ad7a-a76dad980e96",
+            "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+            "kind": "modify",
+            "target": "node/6860044207",
+            "osmType": "node",
+            "osmId": "6860044207",
+            "liveVersion": 5,
+            "title": "Bar Monaco (bar)",
+            "lat": 48.854607,
+            "lon": 2.3727863,
+            "tagsBefore": {
+              "addr:city": "Paris",
+              "addr:housenumber": "41",
+              "addr:postcode": "75011",
+              "addr:street": "Passage Thiéré",
+              "amenity": "bar",
+              "contact:city": "Paris 11eme Arrondissement",
+              "contact:housenumber": "41",
+              "contact:phone": "+33 7 58 57 82 72",
+              "contact:postcode": "75011",
+              "contact:street": "Pass. Thiéré",
+              "name": "Bar Monaco",
+              "opening_hours": "Mo-Fr 16:00-02:00",
+              "phone": "+33 1 43 00 00 00",
+              "ref:FR:SIRET": "92157690600017"
+            },
+            "set": {
+              "opening_hours": "Mo-Su 14:30-02:00"
+            },
+            "remove": [],
+            "evidence": "Hours sign on the door (fixture).",
+            "evidenceBox": null,
+            "rationale": "Simplify hours to what the door shows.",
+            "confidence": 0.7,
+            "status": "approved",
+            "reviewNote": null,
+            "editedByReviewer": true,
+            "sandbox": "node/4365733997",
+            "resultVersion": null,
+            "changesetId": null,
+            "error": null,
+            "createdAt": "2026-11-01T02:28:04.847Z",
+            "updatedAt": "2026-11-01T02:28:07.094Z"
+          }
+        ],
+        "skipped": [],
+        "message": "1 approved."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:08.274Z",
+      "action": "upload-approved",
+      "input": {},
+      "status": 200,
+      "result": {
+        "changesetId": "716672",
+        "changesetUrl": "https://master.apis.dev.openstreetmap.org/changeset/716672",
+        "comment": "Update 1 place from street-level photos: Bar Monaco (bar)",
+        "outcomes": [
+          {
+            "proposalId": "4e796fa6-84e8-44fc-ad7a-a76dad980e96",
+            "title": "Bar Monaco (bar)",
+            "outcome": "uploaded",
+            "sandbox": "node/4365733997",
+            "sandboxUrl": "https://master.apis.dev.openstreetmap.org/node/4365733997",
+            "version": 4,
+            "detail": "Written and read back in changeset 716672."
+          }
+        ],
+        "reconciled": [],
+        "verified": true,
+        "message": "Changeset 716672: 1 uploaded and verified."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:08.445Z",
+      "check": "after rebase and approval the edit lands",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:08.445Z",
+      "check": "the other mapper's phone number (a key the edit never touched) survived the merge",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:08.488Z",
+      "action": "record-signs",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "readings": [
+          {
+            "text": "Curbside e2e florist mvx7n919",
+            "kind": "florist",
+            "box": [
+              0.7,
+              0.4,
+              0.1,
+              0.06
+            ],
+            "legibility": "clear"
+          }
+        ]
+      },
+      "status": 200,
+      "result": "{\"readings\":[{\"readingId\":\"30355433-b810-4f59-b43e-b31b5e6b02c9\",\"read\":\"Curbside e2e florist mvx7n919\",\"legibility\":\"clear\",\"box\":[0.7,0.4,0.1,0.06],\"details\":{},\"verdict\":\"not_on_map\",\"similarity\":0.13793103448275867,\"mapFeature\":null}],\"notRead\":[{\"target\":\"node/2190097104\",\"name\":null,\"expectedX\":0.28,\"distanceM\":10},{\"target\":\"node/6860044208\",\"name\":null,\"expectedX\":0.58,\"distanceM\":17},{\"target\":\"node/6860044207\",\"name\":\"Monaco Bar\",\"expectedX\":0.24,\"distanceM\":20},{\"target\":\"node/6860044209\",\"name\":null,\"expectedX\":0.42,\"distanceM\":20},{\"target\":\"node/10949075531\",\"name\":null,\"expectedX\":0.59,\"distanceM\":23},{\"target\":\"node/10949075532\",\"name\":null,\"expectedX\":0.46,\"distanceM\":25},{\"target\":\"node/2914625161\",\"name\":\"Sakura\",\"expectedX\":0.3,\"distanceM\":29},{\"target\":\"node/7171355203\",\"name\":\"Marionnaud\",\"expectedX\":1,\"distanceM\":30},{\"target\":\"node/9540577417\",\"name\":\"L'Atelier Pierre Jacques\",\"expectedX\":0.25,\"distanceM\":37},{\"target\":\"node/4745203122\",\"name\":\"Église Évangélique\",\"expectedX\":0.14,\"distanceM\":39},{\"target\":\"node/12144366348\",\"name\":null,\"expectedX\":0.8,\"distanceM\":39},{\"target\":\"node/1369995572\",\"name\":null,\"expectedX\":0.76,\"distanceM\":41},{\"target\":\"node/12768618816\",\"name\":null,\"expectedX\":0.85,\"distanceM\":42},{\"target\":\"node/12353636527\",\"name\":\"Le biscuit Alain Ducasse\",\"expectedX\":0.06,\"distanceM\":46},{\"target\":\"node/4248814448\",\"name\":\"O'Tacos\",\"expectedX\":0.43,\"distanceM\":48},{\"target\":\"node/4004690169\",\"name\":\"La Clinique du rasoir électrique\",…"
+    },
+    {
+      "at": "2026-11-01T02:28:08.488Z",
+      "check": "an unknown sign is reported as not on the map",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:08.526Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "create",
+        "set": {
+          "shop": "florist",
+          "name": "Curbside e2e florist mvx7n919"
+        },
+        "evidence": "Fixture: a florist sign.",
+        "rationale": "Exercises the interrupted-upload path.",
+        "confidence": 0.5,
+        "readingId": "30355433-b810-4f59-b43e-b31b5e6b02c9"
+      },
+      "status": 200,
+      "result": {
+        "id": "9f5a5b39-7b01-4376-b7de-719bfbb57b1f",
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "create",
+        "target": null,
+        "osmType": null,
+        "osmId": null,
+        "liveVersion": null,
+        "title": "Curbside e2e florist mvx7n919 (florist)",
+        "lat": 48.854618,
+        "lon": 2.3729215,
+        "tagsBefore": {},
+        "set": {
+          "shop": "florist",
+          "name": "Curbside e2e florist mvx7n919"
+        },
+        "remove": [],
+        "evidence": "Fixture: a florist sign.",
+        "evidenceBox": [
+          0.7,
+          0.4,
+          0.1,
+          0.06
+        ],
+        "rationale": "Exercises the interrupted-upload path.",
+        "confidence": 0.5,
+        "status": "pending",
+        "reviewNote": null,
+        "editedByReviewer": false,
+        "sandbox": null,
+        "resultVersion": null,
+        "changesetId": null,
+        "error": null,
+        "createdAt": "2026-11-01T02:28:08.514Z",
+        "updatedAt": "2026-11-01T02:28:08.514Z",
+        "message": "Drafted \"Curbside e2e florist mvx7n919 (florist)\". It waits for a person to review it."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:08.554Z",
+      "action": "review-proposal",
+      "input": {
+        "ids": [
+          "9f5a5b39-7b01-4376-b7de-719bfbb57b1f"
+        ],
+        "decision": "approve"
+      },
+      "status": 200,
+      "result": {
+        "updated": [
+          {
+            "id": "9f5a5b39-7b01-4376-b7de-719bfbb57b1f",
+            "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+            "kind": "create",
+            "target": null,
+            "osmType": null,
+            "osmId": null,
+            "liveVersion": null,
+            "title": "Curbside e2e florist mvx7n919 (florist)",
+            "lat": 48.854618,
+            "lon": 2.3729215,
+            "tagsBefore": {},
+            "set": {
+              "shop": "florist",
+              "name": "Curbside e2e florist mvx7n919"
+            },
+            "remove": [],
+            "evidence": "Fixture: a florist sign.",
+            "evidenceBox": [
+              0.7,
+              0.4,
+              0.1,
+              0.06
+            ],
+            "rationale": "Exercises the interrupted-upload path.",
+            "confidence": 0.5,
+            "status": "approved",
+            "reviewNote": null,
+            "editedByReviewer": false,
+            "sandbox": null,
+            "resultVersion": null,
+            "changesetId": null,
+            "error": null,
+            "createdAt": "2026-11-01T02:28:08.514Z",
+            "updatedAt": "2026-11-01T02:28:08.541Z"
+          }
+        ],
+        "skipped": [],
+        "message": "1 approved."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:08.970Z",
+      "action": "upload-approved",
+      "input": {
+        "comment": "Curbside e2e interrupted upload [fault:after_upload]"
+      },
+      "status": 500,
+      "result": {
+        "ok": false,
+        "error": "Injected fault at after_upload"
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:08.970Z",
+      "check": "the injected crash interrupts the upload after the write",
+      "pass": true,
+      "detail": "HTTP 500 Injected fault at after_upload"
+    },
+    {
+      "at": "2026-11-01T02:28:08.988Z",
+      "action": "list-proposals",
+      "input": {
+        "status": [
+          "uploading"
+        ]
+      },
+      "status": 200,
+      "result": {
+        "proposals": [
+          {
+            "id": "9f5a5b39-7b01-4376-b7de-719bfbb57b1f",
+            "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+            "kind": "create",
+            "target": null,
+            "osmType": null,
+            "osmId": null,
+            "liveVersion": null,
+            "title": "Curbside e2e florist mvx7n919 (florist)",
+            "lat": 48.854618,
+            "lon": 2.3729215,
+            "tagsBefore": {},
+            "set": {
+              "shop": "florist",
+              "name": "Curbside e2e florist mvx7n919"
+            },
+            "remove": [],
+            "evidence": "Fixture: a florist sign.",
+            "evidenceBox": [
+              0.7,
+              0.4,
+              0.1,
+              0.06
+            ],
+            "rationale": "Exercises the interrupted-upload path.",
+            "confidence": 0.5,
+            "status": "uploading",
+            "reviewNote": null,
+            "editedByReviewer": false,
+            "sandbox": null,
+            "resultVersion": null,
+            "changesetId": "716673",
+            "error": null,
+            "createdAt": "2026-11-01T02:28:08.514Z",
+            "updatedAt": "2026-11-01T02:28:08.781Z"
+          }
+        ],
+        "counts": {
+          "uploading": 1
+        }
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:08.988Z",
+      "check": "the proposal is left mid-upload, as a real crash would leave it",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:11.564Z",
+      "action": "propose-edit",
+      "input": {
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "osmType": "node",
+        "osmId": "2914625161",
+        "set": {
+          "survey:date": "2025-06-28"
+        },
+        "evidence": "SAKURA sign visible (fixture).",
+        "rationale": "Exercises reconcile alongside a normal upload.",
+        "confidence": 0.6,
+        "readingId": "93ac4379-a22c-4617-bff7-4ad14ac5a584"
+      },
+      "status": 200,
+      "result": {
+        "id": "95bd745d-a08d-4e27-89f4-390e9b845a6c",
+        "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+        "kind": "modify",
+        "target": "node/2914625161",
+        "osmType": "node",
+        "osmId": "2914625161",
+        "liveVersion": 3,
+        "title": "Sakura (restaurant)",
+        "lat": 48.85466,
+        "lon": 2.3726792,
+        "tagsBefore": {
+          "amenity": "restaurant",
+          "check_date": "2026-08-29",
+          "cuisine": "japanese",
+          "name": "Sakura"
+        },
+        "set": {
+          "survey:date": "2025-06-28"
+        },
+        "remove": [],
+        "evidence": "SAKURA sign visible (fixture).",
+        "evidenceBox": [
+          0.33,
+          0.48,
+          0.09,
+          0.06
+        ],
+        "rationale": "Exercises reconcile alongside a normal upload.",
+        "confidence": 0.6,
+        "status": "pending",
+        "reviewNote": null,
+        "editedByReviewer": false,
+        "sandbox": null,
+        "resultVersion": null,
+        "changesetId": null,
+        "error": null,
+        "createdAt": "2026-11-01T02:28:11.529Z",
+        "updatedAt": "2026-11-01T02:28:11.529Z",
+        "message": "Drafted \"Sakura (restaurant)\". It waits for a person to review it."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:11.585Z",
+      "action": "review-proposal",
+      "input": {
+        "ids": [
+          "95bd745d-a08d-4e27-89f4-390e9b845a6c"
+        ],
+        "decision": "approve"
+      },
+      "status": 200,
+      "result": {
+        "updated": [
+          {
+            "id": "95bd745d-a08d-4e27-89f4-390e9b845a6c",
+            "photoId": "85371b81-41a7-4e77-b3a7-00c3bbe588aa",
+            "kind": "modify",
+            "target": "node/2914625161",
+            "osmType": "node",
+            "osmId": "2914625161",
+            "liveVersion": 3,
+            "title": "Sakura (restaurant)",
+            "lat": 48.85466,
+            "lon": 2.3726792,
+            "tagsBefore": {
+              "amenity": "restaurant",
+              "check_date": "2026-08-29",
+              "cuisine": "japanese",
+              "name": "Sakura"
+            },
+            "set": {
+              "survey:date": "2025-06-28"
+            },
+            "remove": [],
+            "evidence": "SAKURA sign visible (fixture).",
+            "evidenceBox": [
+              0.33,
+              0.48,
+              0.09,
+              0.06
+            ],
+            "rationale": "Exercises reconcile alongside a normal upload.",
+            "confidence": 0.6,
+            "status": "approved",
+            "reviewNote": null,
+            "editedByReviewer": false,
+            "sandbox": null,
+            "resultVersion": null,
+            "changesetId": null,
+            "error": null,
+            "createdAt": "2026-11-01T02:28:11.529Z",
+            "updatedAt": "2026-11-01T02:28:11.576Z"
+          }
+        ],
+        "skipped": [],
+        "message": "1 approved."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:13.670Z",
+      "action": "upload-approved",
+      "input": {},
+      "status": 200,
+      "result": {
+        "changesetId": "716675",
+        "changesetUrl": "https://master.apis.dev.openstreetmap.org/changeset/716675",
+        "comment": "Update 1 place from street-level photos: Sakura (restaurant)",
+        "outcomes": [
+          {
+            "proposalId": "95bd745d-a08d-4e27-89f4-390e9b845a6c",
+            "title": "Sakura (restaurant)",
+            "outcome": "uploaded",
+            "sandbox": "node/4365733999",
+            "sandboxUrl": "https://master.apis.dev.openstreetmap.org/node/4365733999",
+            "version": 2,
+            "detail": "Written and read back in changeset 716675."
+          }
+        ],
+        "reconciled": [
+          {
+            "proposalId": "9f5a5b39-7b01-4376-b7de-719bfbb57b1f",
+            "title": "Curbside e2e florist mvx7n919 (florist)",
+            "outcome": "already_applied",
+            "sandbox": "node/4365733998",
+            "sandboxUrl": "https://master.apis.dev.openstreetmap.org/node/4365733998",
+            "version": 1,
+            "detail": "An interrupted upload had already landed. Marked uploaded without writing again."
+          }
+        ],
+        "verified": true,
+        "message": "Changeset 716675: 1 uploaded and verified."
+      }
+    },
+    {
+      "at": "2026-11-01T02:28:13.670Z",
+      "check": "the next upload reconciles the interrupted one from the sandbox without writing it twice",
+      "pass": true,
+      "detail": "An interrupted upload had already landed. Marked uploaded without writing again."
+    },
+    {
+      "at": "2026-11-01T02:28:14.181Z",
+      "check": "the interrupted create exists exactly once, version 1",
+      "pass": true,
+      "detail": "node/4365733998"
+    },
+    {
+      "at": "2026-11-01T02:28:14.181Z",
+      "check": "the normal edit in the same run still uploaded",
+      "pass": true
+    },
+    {
+      "at": "2026-11-01T02:28:14.212Z",
+      "action": "list-changesets",
+      "input": {},
+      "status": 200,
+      "result": "{\"changesets\":[{\"id\":\"eab3effe-c798-4a86-956a-191835d2cfe1\",\"osmChangesetId\":\"716675\",\"url\":\"https://master.apis.dev.openstreetmap.org/changeset/716675\",\"comment\":\"Update 1 place from street-level photos: Sakura (restaurant)\",\"status\":\"uploaded\",\"createdAt\":\"2026-11-01 02:28:13.642+00\",\"report\":{\"outcomes\":[{\"proposalId\":\"95bd745d-a08d-4e27-89f4-390e9b845a6c\",\"title\":\"Sakura (restaurant)\",\"outcome\":\"uploaded\",\"sandbox\":\"node/4365733999\",\"sandboxUrl\":\"https://master.apis.dev.openstreetmap.org/node/4365733999\",\"version\":2,\"detail\":\"Written and read back in changeset 716675.\"}],\"reconciled\":[{\"proposalId\":\"9f5a5b39-7b01-4376-b7de-719bfbb57b1f\",\"title\":\"Curbside e2e florist mvx7n919 (florist)\",\"outcome\":\"already_applied\",\"sandbox\":\"node/4365733998\",\"sandboxUrl\":\"https://master.apis.dev.openstreetmap.org/node/4365733998\",\"version\":1,\"detail\":\"An interrupted upload had already landed. Marked uploaded without writing again.\"}]}},{\"id\":\"3f5bea51-2c2a-49a0-b807-bfab294c7854\",\"osmChangesetId\":\"716672\",\"url\":\"https://master.apis.dev.openstreetmap.org/changeset/716672\",\"comment\":\"Update 1 place from street-level photos: Bar Monaco (bar)\",\"status\":\"uploaded\",\"createdAt\":\"2026-11-01 02:28:08.256+00\",\"report\":{\"outcomes\":[{\"proposalId\":\"4e796fa6-84e8-44fc-ad7a-a76dad980e96\",\"title\":\"Bar Monaco (bar)\",\"outcome\":\"uploaded\",\"sandbox\":\"node/4365733997\",\"sandboxUrl\":\"https://master.apis.dev.openstreetmap.org/node/4365733997\",\"version\":4,\"detail\":\"Written and read back in changeset 716672.\"}],\"re…"
+    }
+  ]
+}

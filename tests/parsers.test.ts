@@ -182,3 +182,42 @@ describe("osmChange building", () => {
     ]);
   });
 });
+
+describe("OSM API map fallback", () => {
+  it("keeps tagged places, positions ways at the mean of their nodes and drops the rest", async () => {
+    const { parseOsmMap } = await import("../server/lib/overpass");
+    const out = parseOsmMap({
+      elements: [
+        { type: "node", id: 1, version: 1, lat: 0, lon: 0 },
+        { type: "node", id: 2, version: 1, lat: 2, lon: 2 },
+        {
+          type: "node",
+          id: 3,
+          version: 4,
+          lat: 1,
+          lon: 1,
+          tags: { amenity: "bar", name: "A" },
+        },
+        {
+          type: "way",
+          id: 9,
+          version: 2,
+          nodes: [1, 2],
+          tags: { shop: "bakery" },
+        },
+        { type: "way", id: 10, version: 2, nodes: [99], tags: { shop: "x" } },
+        {
+          type: "node",
+          id: 4,
+          version: 1,
+          lat: 1,
+          lon: 1,
+          tags: { highway: "crossing" },
+        },
+        null,
+      ],
+    });
+    expect(out.map((f) => `${f.type}/${f.id}`)).toEqual(["node/3", "way/9"]);
+    expect(out[1]?.lat).toBe(1);
+  });
+});

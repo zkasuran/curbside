@@ -55,8 +55,10 @@ Everything else here supports those two.
   used at build time on our own route file names. The patched major breaks that package's
   import, so it is not overridden. High and critical findings: zero.
 - The CSP allows inline scripts because the framework hydrates with inline bootstrap code.
-- Overpass is a public community service and is sometimes slow. Reads are cached per area for
-  24 hours and bounded by a time budget; when it is down, inspection still returns the photo.
+- Overpass is a public community service and is sometimes slow. Each fetched area is shared by
+  all users, reused for 24 hours and kept for up to 7 days as a fallback when Overpass is down.
+  Each question has a time budget. If every Overpass instance fails, one small `map` read from
+  the OSM API fills the area (see DATA-SOURCES.md).
 - Ways and relations are copied into the sandbox as a tagged point, because the tested edits are
   tag edits. Geometry edits are out of scope.
 - The 409 race and the double-claim race are handled in code but are not forced by the e2e run.

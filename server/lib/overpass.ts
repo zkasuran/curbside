@@ -132,3 +132,97 @@ export async function liveElement(
   const found = await run(q);
   return found[0] ?? null;
 }
+
+const POI_KEYS = [
+  "shop",
+  "amenity",
+  "craft",
+  "office",
+  "tourism",
+  "leisure",
+  "healthcare",
+  "club",
+];
+
+/**
+ * Last-resort read of a small area from the OSM API `map` call, the same read an editor such
+ * as iD makes before editing, used only when every Overpass instance has failed. Ways get the
+ * mean of their nodes as a position.
+ */
+export function parseOsmMap(json: unknown): LiveFeature[] {
+  const elements = (json as { elements?: unknown })?.elements;
+  if (!Array.isArray(elements)) return [];
+  const nodes = new Map<number, { lat: number; lon: number }>();
+  for (const e of elements as OverpassElement[]) {
+    if (
+      e &&
+      e.type === "node" &&
+      Number.isSafeInteger(e.id) &&
+      typeof e.lat === "number" &&
+      typeof e.lon === "number"
+    )
+      nodes.set(e.id as number, { lat: e.lat, lon: e.lon });
+  }
+  const out: LiveFeature[] = [];
+  for (const raw of elements as (OverpassElement & { nodes?: unknown })[]) {
+    if (
+      !raw ||
+      typeof raw !== "object" ||
+      (raw.type !== "node" && raw.type !== "way")
+    )
+      continue;
+    if (!Number.isSafeInteger(raw.id) || !Number.isSafeInteger(raw.version))
+      continue;
+    const tags: Tags = {};
+    for (const [k, v] of Object.entries(
+      raw.tags && typeof raw.tags === "object" ? raw.tags : {},
+    ))
+      if (typeof v === "string") tags[k] = v;
+    if (!POI_KEYS.some((k) => tags[k])) continue;
+    let pos: { lat: number; lon: number } | undefined;
+    if (
+      raw.type === "node" &&
+      typeof raw.lat === "number" &&
+      typeof raw.lon === "number"
+    )
+      pos = { lat: raw.lat, lon: raw.lon };
+    if (raw.type === "way" && Array.isArray(raw.nodes)) {
+      const pts = (raw.nodes as unknown[])
+        .map((n) => nodes.get(n as number))
+        .filter((x): x is { lat: number; lon: number } => Boolean(x));
+      if (pts.length)
+        pos = {
+          lat: pts.reduce((a, b) => a + b.lat, 0) / pts.length,
+          lon: pts.reduce((a, b) => a + b.lon, 0) / pts.length,
+        };
+    }
+    if (!pos) continue;
+    out.push({
+      type: raw.type,
+      id: String(raw.id),
+      version: raw.version as number,
+      ...pos,
+      tags,
+    });
+  }
+  return out;
+}
+
+export async function featuresFromOsmApi(
+  lat: number,
+  lon: number,
+  radiusM: number,
+): Promise<LiveFeature[]> {
+  const r = Math.min(radiusM, 200);
+  const dLat = r / 111_320;
+  const dLon = r / (111_320 * Math.cos((lat * Math.PI) / 180));
+  const bbox = [lon - dLon, lat - dLat, lon + dLon, lat + dLat]
+    .map((n) => n.toFixed(6))
+    .join(",");
+  return parseOsmMap(
+    await fetchJson<unknown>(
+      `https://api.openstreetmap.org/api/0.6/map.json?bbox=${bbox}`,
+      { timeoutMs: LIMITS.fetchTimeoutMs },
+    ),
+  );
+}
