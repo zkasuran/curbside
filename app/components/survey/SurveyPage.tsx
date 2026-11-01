@@ -142,7 +142,7 @@ export function SurveyPage() {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  const askAgent = (message: string, context: string) => sendToAgentChat({ message, context, submit: true, openSidebar: true, newTab: true, reuseEmptyTab: true });
+  const askAgent = (message: string, context: string) => sendToAgentChat({ message, context, submit: true, openSidebar: true });
   const surveyArea = () =>
     askAgent(
       photos.length
