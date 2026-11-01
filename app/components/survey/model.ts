@@ -56,7 +56,7 @@ export const STATUS_META: Record<
   pending: {
     label: "To review",
     dot: "bg-amber-500",
-    chip: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
+    chip: "bg-amber-500/15 text-amber-800 ring-1 ring-inset ring-amber-500/30 dark:bg-amber-400/12 dark:text-amber-200",
     pin: "#f59e0b",
   },
   approved: {

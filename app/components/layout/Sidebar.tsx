@@ -12,7 +12,6 @@ import {
 } from "@agent-native/toolkit/app/chat/ownership-history";
 import { OrgSwitcher } from "@agent-native/toolkit/app/org";
 import { openCommandMenu } from "@agent-native/toolkit/app/shared";
-import { AgentNativeIcon } from "@agent-native/toolkit/app/shared/AgentNativeIcon";
 import {
   IconEdit,
   IconHome,
@@ -34,6 +33,8 @@ import {
 import { APP_TITLE } from "@/lib/app-config";
 import { chatThreadPath, HOME_PATH, threadIdFromPath } from "@/lib/chat-paths";
 import { cn } from "@/lib/utils";
+
+import { CurbsideMark } from "./CurbsideMark";
 
 const CHAT_STORAGE_KEY = "chat";
 const CHAT_ACTIVE_THREAD_KEY = `agent-chat-active-thread:${CHAT_STORAGE_KEY}`;
@@ -129,7 +130,9 @@ function SurveyNavLink({ collapsed }: { collapsed: boolean }) {
       className={cn(
         "flex items-center text-sidebar-accent-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
         active && "bg-sidebar-accent",
-        collapsed ? "size-8 justify-center rounded-md" : "h-8 w-full gap-3 rounded-lg px-3 text-sm font-medium",
+        collapsed
+          ? "size-8 justify-center rounded-md"
+          : "h-8 w-full gap-3 rounded-lg px-3 text-sm font-medium",
       )}
     >
       <IconMapPin className="size-4 shrink-0" strokeWidth={1.8} />
@@ -404,10 +407,7 @@ export function Sidebar({
                 aria-label={APP_TITLE}
                 className="flex size-8 items-center justify-center rounded outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
               >
-                <AgentNativeIcon
-                  aria-hidden="true"
-                  className="h-3.5 w-6 text-sidebar-accent-foreground"
-                />
+                <CurbsideMark className="size-6 rounded-md shadow-sm" />
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right">{APP_TITLE}</TooltipContent>
@@ -418,11 +418,8 @@ export function Sidebar({
               to="/"
               className="flex min-w-0 flex-1 items-center gap-3 rounded outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             >
-              <AgentNativeIcon
-                aria-hidden="true"
-                className="h-3.5 w-6 shrink-0 text-sidebar-accent-foreground"
-              />
-              <span className="truncate text-sm font-semibold text-sidebar-accent-foreground">
+              <CurbsideMark className="size-6 shrink-0 rounded-md shadow-sm" />
+              <span className="truncate text-[15px] font-bold tracking-tight text-sidebar-accent-foreground">
                 {APP_TITLE}
               </span>
             </Link>
