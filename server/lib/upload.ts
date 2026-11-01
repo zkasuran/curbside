@@ -25,12 +25,22 @@ import { applyPatch, tagsEqual, threeWay, type TagPatch, type Tags } from "./tag
 const VERSION = "Curbside 0.1";
 const AI_LINE = "Drafted by an AI agent from street-level photos; each edit approved by a person.";
 
-/** Test-only fault injection, so the interrupted-upload path can be exercised for real. */
-function faultPoint(name: string): void {
-  const fault = process.env.CURBSIDE_FAULT; // guard:allow-env-credential — test-only fault switch, off in production
-  if (process.env.NODE_ENV !== "production" && fault === name) {
+/**
+ * Test-only fault injection, so the interrupted-upload path can be exercised for real against the
+ * sandbox. Fires only when the server runs outside production with CURBSIDE_ENABLE_FAULTS=1 and the
+ * changeset comment asks for it, e.g. "[fault:after_upload]".
+ */
+function faultPoint(name: string, comment: string): void {
+  const enabled = process.env.CURBSIDE_ENABLE_FAULTS === "1"; // guard:allow-env-credential — test-only fault switch, off in production
+  if (process.env.NODE_ENV !== "production" && enabled && comment.includes(`[fault:${name}]`)) {
     throw new Error(`Injected fault at ${name}`);
   }
+}
+
+/** How old an upload claim must be before it counts as interrupted. Tests may shorten it outside production. */
+function staleUploadMs(): number {
+  const override = Number(process.env.CURBSIDE_STALE_UPLOAD_MS); // guard:allow-env-credential — test-only timing knob, ignored in production
+  return process.env.NODE_ENV !== "production" && Number.isFinite(override) && override >= 0 ? override : LIMITS.staleUploadMs;
 }
 
 export interface Outcome {
@@ -156,7 +166,7 @@ export async function uploadApproved(who: Caller, ids: string[] | undefined, com
     fail(`You have uploaded ${n} times in the last day, the most allowed in the demo.`, { errorCode: "rate_limited", statusCode: 429 });
 
   // 1. Settle any upload a crash or timeout left behind, before claiming new work.
-  const staleBefore = new Date(Date.now() - LIMITS.staleUploadMs).toISOString();
+  const staleBefore = new Date(Date.now() - staleUploadMs()).toISOString();
   const stale = await db.select().from(p).where(and(ownedBy(p, who), eq(p.status, "uploading"), lt(p.claimedAt, staleBefore))).limit(LIMITS.proposalsPerUpload);
   const reconciled: Outcome[] = [];
   for (const row of stale) reconciled.push(await reconcile(row));
@@ -252,7 +262,7 @@ export async function uploadApproved(who: Caller, ids: string[] | undefined, com
     });
     for (const x of [...modifies.map((m) => m.row), ...creates.map((c) => c.row)]) await setRow(x.id, { changesetId: cs });
     const diff = await uploadDiff(cs, creates.map((c) => c.node), modifies.map((m) => m.mod));
-    faultPoint("after_upload");
+    faultPoint("after_upload", comment);
     for (const c of creates) {
       const d = diff.find((x) => x.oldId === String(c.node.placeholderId));
       if (d?.newId) await setRow(c.row.id, { sandboxType: "node", sandboxId: d.newId });

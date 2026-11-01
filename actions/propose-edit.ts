@@ -6,11 +6,12 @@ import { z } from "zod";
 import { getDb, schema } from "../server/db/index.js";
 import { caller, nowIso, ownedBy, proposalDto, rethrow } from "../server/lib/common.js";
 import { cachedFeaturesAround } from "../server/lib/features.js";
-import { distanceM, project, round7 } from "../server/lib/geo.js";
+import { distanceM, inViewCone, project, round7 } from "../server/lib/geo.js";
 import { LIMITS } from "../server/lib/limits.js";
 import { liveElement } from "../server/lib/overpass.js";
 import {
   PRIMARY_KEYS,
+  assertDatesNotOlder,
   assertPhotoFresh,
   findDuplicate,
   titleFor,
@@ -31,7 +32,7 @@ export default defineAction({
     osmId: z.string().regex(/^\d+$/u).optional().describe("Required for modify: numeric OSM id"),
     set: tagMap.describe('Tags to add or change, e.g. {"name":"Bar Monaco"}'),
     remove: z.array(z.string()).default([]).describe("Tag keys to delete"),
-    evidence: z.string().min(3).max(LIMITS.evidenceMaxChars).describe("What the photo shows, quoting sign text exactly"),
+    evidence: z.string().min(3).max(LIMITS.evidenceMaxChars).describe("What the photo shows, quoting the sign text exactly. Plain words for a reviewer: no ids."),
     evidenceBox: z
       .array(z.number())
       .length(4)
@@ -109,11 +110,13 @@ export default defineAction({
         );
         const live = seen ?? (await liveElement(args.osmType, args.osmId));
         if (!live) fail(`${args.osmType}/${args.osmId} is not on the live map.`, { errorCode: "not_found", statusCode: 404 });
-        if (distanceM(photo, live) > LIMITS.featureRadiusM + 20)
-          fail(`${args.osmType}/${args.osmId} is ${Math.round(distanceM(photo, live))} m from the photo, too far to be what it shows.`, {
+        // The photo can only be evidence for something inside its view cone.
+        if (!inViewCone(photo, live, photo.azimuth, photo.fov, LIMITS.featureRadiusM + 20))
+          fail(`${args.osmType}/${args.osmId} is ${Math.round(distanceM(photo, live))} m away and outside what this photo can see.`, {
             errorCode: "target_out_of_view",
             statusCode: 400,
           });
+        assertDatesNotOlder(patch.set, live.tags);
         finalPatch = effectivePatch(live.tags, patch);
         if (Object.keys(finalPatch.set).length + finalPatch.remove.length === 0)
           fail("The map already says this. Nothing to change.", { errorCode: "no_change", statusCode: 409 });

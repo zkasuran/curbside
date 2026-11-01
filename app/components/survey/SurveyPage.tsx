@@ -10,6 +10,7 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSetHeaderActions, useSetPageTitle } from "@agent-native/toolkit/app-shell/header-actions";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { toast } from "sonner";
@@ -153,38 +154,53 @@ export function SurveyPage() {
   const approvedCount = counts.approved ?? 0;
   const loading = photosQ.isPending || proposalsQ.isPending;
 
-  return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/12 px-2.5 py-1 text-xs font-medium text-amber-800 dark:text-amber-200" title="Every upload goes to the OpenStreetMap development server. Live OSM is never written.">
-          <IconShieldCheck className="size-3.5" />
-          Sandbox only
-          {statusQ.data?.account ? (
-            <a className="inline-flex items-center gap-0.5 underline-offset-2 hover:underline" href={statusQ.data.accountUrl ?? undefined} target="_blank" rel="noreferrer">
-              · {statusQ.data.account} <IconExternalLink className="size-3" />
-            </a>
-          ) : null}
+  const sandboxBadge = useMemo(
+    () => (
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="font-semibold">Survey</span>
+        <span
+          className="hidden items-center gap-1.5 truncate rounded-full bg-amber-500/12 px-2.5 py-0.5 text-xs font-medium text-amber-800 sm:inline-flex dark:text-amber-200"
+          title="Every upload goes to the OpenStreetMap development server. Live OSM is never written."
+        >
+          <IconShieldCheck className="size-3.5 shrink-0" />
+          Sandbox only{statusQ.data?.account ? ` · ${statusQ.data.account}` : ""}
         </span>
-        <span className="flex-1" />
+      </span>
+    ),
+    [statusQ.data?.account],
+  );
+  useSetPageTitle(sandboxBadge);
+  const busyImport = importPhotos.isPending;
+  const busyUpload = upload.isPending;
+  const actions = useMemo(
+    () => (
+      <span className="flex items-center gap-1.5">
         <Button
           size="sm"
-          variant="outline"
-          disabled={importPhotos.isPending}
+          variant="ghost"
+          disabled={busyImport}
           onClick={() => importPhotos.mutate({ lat: center.current.lat, lon: center.current.lon, radiusM: 80, limit: 12 })}
         >
-          <IconCamera className="size-4" /> {importPhotos.isPending ? "Finding photos…" : "Photos here"}
+          <IconCamera className="size-4" /> <span className="hidden md:inline">{busyImport ? "Finding photos…" : "Photos here"}</span>
         </Button>
         <Button size="sm" variant="outline" onClick={surveyArea}>
-          <IconSparkles className="size-4" /> Survey with agent
+          <IconSparkles className="size-4" /> <span className="hidden md:inline">Survey with agent</span>
         </Button>
-        <Button size="sm" disabled={approvedCount === 0 || upload.isPending} onClick={() => upload.mutate({})}>
+        <Button size="sm" disabled={approvedCount === 0 || busyUpload} onClick={() => upload.mutate({})}>
           <IconCloudUpload className="size-4" />
-          {upload.isPending ? "Uploading…" : `Upload ${approvedCount} approved`}
+          {busyUpload ? "Uploading…" : `Upload ${approvedCount}`}
         </Button>
-      </div>
+      </span>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [busyImport, busyUpload, approvedCount, photos.length, counts.pending],
+  );
+  useSetHeaderActions(actions);
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_26rem]">
-        <div className="relative min-h-[45vh] border-b border-border lg:border-b-0 lg:border-r">
+  return (
+    <div className="@container flex h-full min-h-0 flex-col">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(16rem,42%)_minmax(0,1fr)] @4xl:grid-cols-[minmax(0,1fr)_26rem] @4xl:grid-rows-1">
+        <div className="relative min-h-0 border-b border-border @4xl:border-b-0 @4xl:border-r">
           {mounted ? (
             <Suspense fallback={<Skeleton className="absolute inset-0 rounded-none" />}>
               <SurveyMap
@@ -282,7 +298,7 @@ export function SurveyPage() {
               ))
             )}
           </div>
-          <p className="hidden border-t border-border px-3 py-2 text-[11px] text-muted-foreground lg:block">
+          <p className="hidden border-t border-border px-3 py-2 text-[11px] text-muted-foreground @4xl:block">
             <Kbd>j</Kbd>/<Kbd>k</Kbd> move · <Kbd>a</Kbd> approve · <Kbd>r</Kbd> reject. Photos: Panoramax, open licence. Map data © OpenStreetMap contributors, ODbL.
           </p>
         </aside>

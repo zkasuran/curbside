@@ -1,4 +1,4 @@
-# Chat — Agent Guide
+# Curbside — Agent Guide
 
 Chat is the minimal chat-first agent-native app. `/` redirects to shared sign-in, then `/home`, the editable Get started page. Chat lives at `/chat`; new chats start there. Actions carry capabilities; screens exist only for durable workflows.
 
@@ -31,3 +31,25 @@ Use `adding-a-feature` for functional parity and `frontend-design` for a user-fa
 Before building common workspace or agent UI, read `agent-native-toolkit`; for supported customization, read `customizing-agent-native`.
 
 - Guarded verification: run `pnpm agent-native:doctor`; fix findings before done.
+
+## Curbside: street survey for OpenStreetMap
+
+Curbside reads open street photos (Panoramax), compares the signs with OpenStreetMap and drafts edits a person reviews. `/survey` is the map plus review queue; `?photo=`, `?proposal=`, `?filter=` select records. Chat stays at `/chat`.
+
+- Read blind, then compare: `inspect-photo` hides map names; transcribe signs, then `record-signs` shows the matches. Never propose from a partial reading.
+- A same-name place nearby is a rename, never a new point (`duplicate_feature`). One open proposal per element (`duplicate_proposal`; use `update-proposal`).
+- Approving and uploading need a person. Uploads go only to the OSM development sandbox; a key changed since approval becomes `conflict` (fix with `update-proposal rebase=true`).
+- Dates are ISO `YYYY-MM-DD`; `check_date` never moves backwards (`map_newer`).
+- `navigation` on `/survey` carries `photoId`, `proposalId`, `filter`, `center`.
+
+| Action | Purpose |
+|---|---|
+| import-street-photos | Add Panoramax photos around a point |
+| inspect-photo | Picture, crops and unnamed feature slots |
+| record-signs | Save readings, get map matches |
+| propose-edit | Draft a rename, update or new place |
+| list-proposals | Review queue |
+| update-proposal | Edit, move or rebase a draft |
+| review-proposal | Approve (person), reject, reopen |
+| upload-approved | Verified upload to the sandbox (person) |
+| list-changesets | Upload history |

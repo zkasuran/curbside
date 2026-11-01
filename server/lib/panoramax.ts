@@ -50,15 +50,16 @@ export function parsePanoramax(json: unknown): StreetPhoto[] {
   if (!Array.isArray(features)) return [];
   const out: StreetPhoto[] = [];
   for (const f of features as Feature[]) {
+    if (!f || typeof f !== "object") continue;
     const id = typeof f.id === "string" && /^[0-9a-f-]{36}$/u.test(f.id) ? f.id : null;
     const coords = Array.isArray(f.geometry?.coordinates) ? (f.geometry?.coordinates as unknown[]) : [];
     const [lon, lat] = coords as number[];
-    const p = f.properties ?? {};
+    const p = f.properties && typeof f.properties === "object" ? f.properties : {};
     const sd = f.assets?.sd?.href;
     const thumb = f.assets?.thumb?.href;
     const hd = f.assets?.hd?.href;
     const license = typeof p.license === "string" ? p.license : "";
-    const io = (p["pers:interior_orientation"] ?? {}) as { field_of_view?: unknown };
+    const io = ((p["pers:interior_orientation"] as object | null) ?? {}) as { field_of_view?: unknown };
     const az = p["view:azimuth"];
     if (!id || typeof lat !== "number" || typeof lon !== "number") continue;
     if (typeof sd !== "string" || !isPanoramaxImageUrl(sd)) continue;

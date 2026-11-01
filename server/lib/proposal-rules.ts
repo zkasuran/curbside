@@ -57,6 +57,16 @@ export function findDuplicate(name: string | undefined, at: LatLon, candidates: 
   return null;
 }
 
+/** A survey date must not move a newer one backwards: the map already knows something fresher. */
+export function assertDatesNotOlder(set: Tags, current: Tags): void {
+  for (const key of ["check_date", "survey:date"]) {
+    const next = set[key];
+    const now = current[key];
+    if (next && now && /^\d{4}-\d{2}-\d{2}/u.test(now) && next <= now.slice(0, 10))
+      throw new TagError(`The map's ${key} (${now}) is already as recent as the photo; nothing to confirm.`, "map_newer");
+  }
+}
+
 /** Folded "check_date" style dates must be ISO calendar dates, and not in the future. */
 export function validateSpecialValues(set: Tags, now = new Date()): void {
   for (const key of ["check_date", "survey:date"]) {

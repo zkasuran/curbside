@@ -23,7 +23,7 @@ export function PhotoViewer({ photo, proposals, selectedProposalId, onSelectProp
   const boxed = proposals.filter((p) => p.evidenceBox && p.status !== "rejected");
   return (
     <section className="overflow-hidden rounded-xl border border-border bg-card" aria-label="Selected photo">
-      <div className="relative aspect-[2048/1080] w-full bg-muted">
+      <div className="relative aspect-[2048/1080] w-full overflow-hidden bg-muted">
         {!loaded ? <Skeleton className="absolute inset-0 rounded-none" /> : null}
         <img
           src={photo.imageUrl}

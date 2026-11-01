@@ -47,13 +47,14 @@ export function parseOverpass(json: unknown): LiveFeature[] {
   if (!Array.isArray(elements)) return [];
   const out: LiveFeature[] = [];
   for (const raw of elements as OverpassElement[]) {
+    if (!raw || typeof raw !== "object") continue;
     if (raw.type !== "node" && raw.type !== "way" && raw.type !== "relation") continue;
     if (!Number.isSafeInteger(raw.id) || !Number.isSafeInteger(raw.version)) continue;
     const lat = raw.lat ?? raw.center?.lat;
     const lon = raw.lon ?? raw.center?.lon;
     if (typeof lat !== "number" || typeof lon !== "number") continue;
     const tags: Tags = {};
-    for (const [k, v] of Object.entries(raw.tags ?? {})) if (typeof v === "string") tags[k] = v;
+    for (const [k, v] of Object.entries(raw.tags && typeof raw.tags === "object" ? raw.tags : {})) if (typeof v === "string") tags[k] = v;
     out.push({ type: raw.type, id: String(raw.id), version: raw.version as number, lat, lon, tags });
   }
   return out;
